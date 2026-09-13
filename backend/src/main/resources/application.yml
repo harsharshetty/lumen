@@ -9,6 +9,8 @@ spring:
     open-in-view: false
   flyway:
     enabled: true
+server:
+  port: ${PORT:8080}
 management:
   endpoints:
     web:
