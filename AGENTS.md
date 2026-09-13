@@ -19,7 +19,18 @@ This repository is implemented by AI agents under human architectural and produc
 7. Learning concepts such as Division, Fractions, and Multiplication are data instances, not separate domain classes.
 8. Preserve a clear separation between deterministic application/domain state and probabilistic AI interpretation.
 9. All implementation work should include appropriate tests.
-10. Keep commits focused and readable. Prefer pull requests for substantial changes.
+10. Keep commits focused and readable.
+
+## Git and deployment workflow
+
+1. `main` is the only deployable branch and the only branch from which production/cloud deployment may run.
+2. No implementation agent or human should push commits directly to `main`.
+3. Every change must start from the latest `main` on a dedicated branch.
+4. All changes must return to `main` through a pull request.
+5. CI must run on pull requests before merge.
+6. Deployment workflows must trigger only from `main` after a successful merge (or by an explicit manual workflow dispatch that deploys the `main` revision only).
+7. Branch protection/rulesets should enforce the above policy at GitHub level, not rely only on convention.
+8. Codex must never bypass branch protection, force-push `main`, or merge around failing required checks.
 
 ## Current stack direction
 
