@@ -5,8 +5,17 @@ This repository is implemented by AI agents under human architectural and produc
 ## Roles
 
 - **Product owner / architect:** Harsha. Makes product, architecture, and design decisions. Does not perform routine coding or setup work.
-- **Architecture partner:** ChatGPT. Helps evaluate trade-offs, records architectural decisions, reviews implementation, and maintains design intent.
-- **Implementation agent:** Codex. Performs repository setup, coding, tests, CI/CD, deployment, and implementation changes.
+- **Architecture partner / control plane:** ChatGPT. Harsha interacts here as the primary interface. ChatGPT helps evaluate trade-offs, records architectural decisions, creates implementation tasks in GitHub, reviews Codex output, and maintains design intent.
+- **Implementation agent:** Codex. Performs repository setup, coding, tests, CI/CD, deployment, and implementation changes from GitHub/Codex Cloud tasks.
+- **Editor:** Zed is optional for inspection of local files and diffs. Harsha should not be required to use Zed as a second conversational control surface.
+
+## Working model
+
+1. Harsha discusses product, architecture, and design decisions with ChatGPT.
+2. ChatGPT records approved decisions in `/docs` and converts implementation work into GitHub issues/PR task context.
+3. Codex consumes repository context (`AGENTS.md`, `/docs`, issue/PR instructions), works on a feature branch, runs tests, and updates the PR.
+4. ChatGPT reviews the resulting GitHub changes and reports back to Harsha here.
+5. Harsha should not need to copy prompts between ChatGPT and Codex or copy Codex output back into ChatGPT.
 
 ## Operating principles
 
