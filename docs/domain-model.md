@@ -4,105 +4,83 @@
 
 Learning concepts are generic domain entities. Specific concepts such as Division, Fractions, or Multiplication are records/data instances, not separate code-level domain types.
 
-Avoid models such as:
+## Agreed basic domain model
 
-```java
-class Division {}
-class Fractions {}
-class Multiplication {}
-```
+### Subject
+Represents a broad academic area such as Mathematics, Science, or English.
 
-Prefer a generic concept model:
+Relationship:
+- One Subject has many Curricula.
+- Each Curriculum belongs to one Subject.
 
-```text
-LearningConcept
-- id
-- name
-- subject
-- grade
-- curriculum
-- metadata
-- relationships
-```
+### Curriculum
+Represents a specific programme of study for one Subject, such as CBSE Grade 3 Mathematics or Olympiad Grade 3 Mathematics.
 
-Example concept data:
+Relationship:
+- One Curriculum has many CurriculumConcepts.
+- Each CurriculumConcept belongs to one Curriculum.
 
-```json
-{
-  "id": "math.grade3.division",
-  "name": "Division",
-  "subject": "Mathematics",
-  "grade": 3
-}
-```
+### LearningConcept
+Represents a canonical academic concept or skill independent of any particular curriculum.
 
-## Initial domain concepts
+Examples:
+- Division
+- Fractions
+- Multiplication
+
+LearningConcept exists independently of Curriculum.
+
+### CurriculumConcept
+Represents how a specific Curriculum includes a specific LearningConcept.
+
+Relationship:
+- Many CurriculumConcepts may reference the same LearningConcept.
+- Each CurriculumConcept references exactly one LearningConcept.
+
+This allows the same canonical concept (for example Fractions) to appear in multiple curricula with curriculum-specific expectations.
 
 ### Learner
 Represents the child whose learning is being managed.
 
-### LearningConcept
-Represents a curriculum concept or skill.
+### LearnerCurriculum
+Represents a learner following or being enrolled in a particular Curriculum.
 
-### ConceptRelationship
-Represents prerequisite, parent/child, sequencing, or other relationships between concepts.
+Relationship:
+- One Learner has many LearnerCurriculum records.
+- One Curriculum has many LearnerCurriculum records.
+- Each LearnerCurriculum belongs to one Learner and one Curriculum.
+- Therefore Learner and Curriculum are many-to-many through LearnerCurriculum.
 
-### Evidence
-Represents an observation that may change what Lumen believes about the learner.
+## Current relationship map
 
-Possible sources include:
-- school tests
-- worksheets
-- notebook work
-- targeted diagnostics
-- parent observations
+```text
+Subject 1 --------< Curriculum
 
-Evidence should retain provenance and time context.
+Curriculum 1 -----< CurriculumConcept >----- 1 LearningConcept
 
-### LearnerConceptState
-Represents the current structured view of the learner for a specific concept.
+Learner 1 --------< LearnerCurriculum >----- 1 Curriculum
+```
 
-Candidate dimensions:
-- understanding
-- recall
-- application
-- retention
-- confidence
-- evidence sufficiency
-
-The exact scoring/state representation is intentionally not finalized yet.
-
-### LearningGoal
-Represents parent-defined goals such as school exams, Olympiad preparation, catch-up, or maintenance.
-
-### TimeBudget
-Represents the study time explicitly provided by the parent for a planning period.
-
-### LearningPlan
-A versioned allocation of the available time across recommended actions.
-
-A plan should preserve why each allocation was made and what evidence supported it.
-
-### Recommendation
-A proposed action tied to evidence, confidence, uncertainty, and—where necessary—a suggested verification step.
-
-### Diagnostic
-A deliberately small evidence-gathering activity used when the system does not know enough to allocate time confidently.
+Notes:
+- `CurriculumConcept -> LearningConcept` is many-to-one.
+- `Curriculum -> CurriculumConcept` is one-to-many.
+- `Learner -> LearnerCurriculum` is one-to-many.
+- `Curriculum -> LearnerCurriculum` is one-to-many.
 
 ## Important invariant
 
-A test score is evidence. It is not, by itself, a learning state.
+Do not create domain classes such as `Division`, `Fractions`, or `Multiplication`. These are instances of `LearningConcept`.
 
-Likewise, a single wrong answer must not automatically turn a concept into "weak".
+## Deferred modeling
 
-## Longitudinal behavior
+The following areas are intentionally not finalized yet and will be modeled in later iterations:
+- Evidence
+- LearnerConceptState
+- LearningGoal
+- TimeBudget
+- LearningPlan
+- Diagnostic
+- Recommendation / plan actions
+- Concept relationships such as prerequisite, hierarchy, and sequencing
 
-Lumen should preserve enough history to answer:
-
-- What did we believe before?
-- What evidence changed that belief?
-- Why did the plan change?
-- What did we stop spending time on?
-- What was reallocated instead?
-
-This auditability is part of the product value, not just a technical concern.
+The exact learning-state scoring representation is also intentionally deferred.
