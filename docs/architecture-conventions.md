@@ -10,6 +10,7 @@ Under the root application package, keep these sibling packages:
 domain/
 repository/
 service/
+  impl/
 controller/
 config/
 mappers/
@@ -27,6 +28,7 @@ All service-level code must be coded to interfaces.
 
 - Service interfaces live directly under `service/`.
 - Every concrete service implementation lives under `service/impl/`.
+- Every service implementation implements its corresponding service interface.
 - Controllers and other consumers depend on service interfaces, never on implementation classes directly.
 - Concrete implementations use constructor injection.
 - Transaction boundaries belong in the service implementation layer where appropriate.
