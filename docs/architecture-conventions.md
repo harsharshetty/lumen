@@ -23,7 +23,26 @@ All JPA/domain classes live here.
 All Spring Data JPA repository interfaces live here.
 
 ### service
-All service interfaces and service implementation classes live here. Implementations may be placed under `service/impl` when that improves clarity, but the service layer remains under `service`.
+All service-level code must be coded to interfaces.
+
+- Service interfaces live directly under `service/`.
+- Every concrete service implementation lives under `service/impl/`.
+- Controllers and other consumers depend on service interfaces, never on implementation classes directly.
+- Concrete implementations use constructor injection.
+- Transaction boundaries belong in the service implementation layer where appropriate.
+
+Example:
+
+```text
+service/
+  SubjectService.java
+  CurriculumService.java
+  LearnerService.java
+  impl/
+    SubjectServiceImpl.java
+    CurriculumServiceImpl.java
+    LearnerServiceImpl.java
+```
 
 ### controller
 All REST controllers live here.
@@ -43,7 +62,7 @@ All request/response data transfer objects live here.
 - JPA/domain entities must never be returned directly from controller endpoints.
 - Incoming request DTOs are mapped to domain objects before persistence.
 - Domain objects are mapped back to response DTOs before crossing the HTTP boundary.
-- Controllers must not access repositories directly; they call the service layer.
+- Controllers must not access repositories directly; they call service interfaces.
 - Persistence concerns stay behind services/repositories.
 
 ## Package naming
