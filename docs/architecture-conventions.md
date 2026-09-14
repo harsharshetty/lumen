@@ -31,7 +31,7 @@ All service-level code must be coded to interfaces.
 - Every service implementation implements its corresponding service interface.
 - Controllers and other consumers depend on service interfaces, never on implementation classes directly.
 - Concrete implementations use constructor injection.
-- Transaction boundaries belong in the service implementation layer where appropriate.
+- Service methods should express application/use-case intent rather than mirror repository CRUD method names.
 
 Example:
 
@@ -45,6 +45,14 @@ service/
     CurriculumServiceImpl.java
     LearnerServiceImpl.java
 ```
+
+## Transaction boundaries
+
+- `@Service` identifies the Spring service bean; it does not create a transaction.
+- Put transaction boundaries at the service/use-case layer when an operation must be atomic across multiple repository/database actions.
+- Use `@Transactional` deliberately on mutating use-case methods that need one transaction. Do not add transactions to simple reads or single-operation methods without a concrete need.
+- Keep transactions short and database-focused. Do not perform external API calls, LLM calls, file processing, or other potentially slow I/O inside an open database transaction.
+- Rely on Spring's default rollback behavior for unchecked exceptions. If a checked exception must trigger rollback, configure `rollbackFor` explicitly.
 
 ### controller
 All REST controllers live here.
@@ -62,8 +70,9 @@ All request/response data transfer objects live here.
 
 - Controllers expose DTOs only.
 - JPA/domain entities must never be returned directly from controller endpoints.
-- Incoming request DTOs are mapped to domain objects before persistence.
+- Incoming request DTOs are mapped to domain/application inputs before the service call.
 - Domain objects are mapped back to response DTOs before crossing the HTTP boundary.
+- Services must not depend on HTTP request/response DTOs.
 - Controllers must not access repositories directly; they call service interfaces.
 - Persistence concerns stay behind services/repositories.
 
