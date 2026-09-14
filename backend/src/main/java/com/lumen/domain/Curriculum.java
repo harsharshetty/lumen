@@ -1,34 +1,38 @@
 package com.lumen.domain;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+
 import java.util.UUID;
 
 @Entity
 @Table(name = "curricula")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@RequiredArgsConstructor
 public class Curriculum {
-    @Id @GeneratedValue(strategy = GenerationType.UUID)
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
+
     @Column(nullable = false)
+    @NonNull
+    @Setter
     private String name;
+
     @Column(name = "grade_level", nullable = false)
+    @NonNull
+    @Setter
     private String gradeLevel;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "subject_id", nullable = false)
+    @NonNull
+    @Setter
     private Subject subject;
-
-    protected Curriculum() {}
-
-    public Curriculum(String name, String gradeLevel, Subject subject) {
-        this.name = name;
-        this.gradeLevel = gradeLevel;
-        this.subject = subject;
-    }
-
-    public UUID getId() { return id; }
-    public String getName() { return name; }
-    public String getGradeLevel() { return gradeLevel; }
-    public Subject getSubject() { return subject; }
-    public void setName(String name) { this.name = name; }
-    public void setGradeLevel(String gradeLevel) { this.gradeLevel = gradeLevel; }
-    public void setSubject(Subject subject) { this.subject = subject; }
 }
