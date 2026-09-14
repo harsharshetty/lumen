@@ -74,6 +74,25 @@ describe('ParentOnboardingFlow', () => {
     expect(screen.getByRole('heading', { name: 'Add your first learner' })).toBeInTheDocument();
   });
 
+  it('returns to the learner profile when backing out of curriculum editing', () => {
+    const learner = { id: 'anya', displayName: 'Anya' };
+    renderFlow({
+      learners: [learner],
+      selections: { anya: ['hindi-cbse'] },
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open' }));
+    expect(screen.getByRole('heading', { name: 'Anya' })).toBeInTheDocument();
+    expect(screen.getByText('CBSE Grade 3 Hindi')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit curricula' }));
+    expect(screen.getByRole('heading', { name: 'Choose curricula for Anya' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Back' }));
+
+    expect(screen.getByRole('heading', { name: 'Anya' })).toBeInTheDocument();
+    expect(screen.getByText('CBSE Grade 3 Hindi')).toBeInTheDocument();
+  });
+
   it('opens an existing learner, edits curricula, persists the updated local view, and returns to learners', async () => {
     const learner = { id: 'anya', displayName: 'Anya' };
     const { onSaveCurricula } = renderFlow({
