@@ -2,6 +2,9 @@ package com.lumen.domain;
 
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Method;
+import java.util.Arrays;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -24,29 +27,27 @@ class IdentityAccessDomainTest {
     }
 
     @Test
-    void userLearnerAccessSupportsAllAccessLevelsAndRelationshipUpdates() {
-        User firstUser = new User("Parent", UserRole.USER);
-        User secondUser = new User("Guardian", UserRole.USER);
-        Learner firstLearner = new Learner("Aarohi");
-        Learner secondLearner = new Learner("Mira");
+    void userLearnerAccessKeepsIdentityFixedAndAllowsExplicitAccessLevelChange() {
+        User user = new User("Parent", UserRole.USER);
+        Learner learner = new Learner("Aarohi");
         UserLearnerAccess access = new UserLearnerAccess(
-                firstUser,
-                firstLearner,
+                user,
+                learner,
                 LearnerAccessLevel.OWNER
         );
 
         assertThat(access.getId()).isNull();
-        assertThat(access.getUser()).isSameAs(firstUser);
-        assertThat(access.getLearner()).isSameAs(firstLearner);
+        assertThat(access.getUser()).isSameAs(user);
+        assertThat(access.getLearner()).isSameAs(learner);
         assertThat(access.getAccessLevel()).isEqualTo(LearnerAccessLevel.OWNER);
 
-        access.setUser(secondUser);
-        access.setLearner(secondLearner);
-        access.setAccessLevel(LearnerAccessLevel.CONTRIBUTOR);
+        access.changeAccessLevel(LearnerAccessLevel.CONTRIBUTOR);
 
-        assertThat(access.getUser()).isSameAs(secondUser);
-        assertThat(access.getLearner()).isSameAs(secondLearner);
+        assertThat(access.getUser()).isSameAs(user);
+        assertThat(access.getLearner()).isSameAs(learner);
         assertThat(access.getAccessLevel()).isEqualTo(LearnerAccessLevel.CONTRIBUTOR);
+        assertThat(Arrays.stream(UserLearnerAccess.class.getMethods()).map(Method::getName))
+                .doesNotContain("setUser", "setLearner", "setAccessLevel");
         assertThat(LearnerAccessLevel.values()).containsExactly(
                 LearnerAccessLevel.OWNER,
                 LearnerAccessLevel.CONTRIBUTOR,
@@ -81,5 +82,7 @@ class IdentityAccessDomainTest {
                 .isInstanceOf(NullPointerException.class);
         assertThatThrownBy(() -> new UserLearnerAccess(user, learner, null))
                 .isInstanceOf(NullPointerException.class);
+        UserLearnerAccess access = new UserLearnerAccess(user, learner, LearnerAccessLevel.OWNER);
+        assertThatThrownBy(() -> access.changeAccessLevel(null)).isInstanceOf(NullPointerException.class);
     }
 }

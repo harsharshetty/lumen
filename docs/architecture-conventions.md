@@ -20,6 +20,8 @@ dto/
 ### domain
 All JPA/domain classes live here.
 
+Identity-defining relationships in domain entities are immutable after construction. If an association entity represents the relationship between two domain identities, those endpoint references must not be exposed through general reassignment setters. Mutable business state on the association may change through explicit, intention-revealing domain/application operations. For example, `UserLearnerAccess.user` and `.learner` define the identity of the access relationship and are immutable after creation, while its access level may change through an explicit access-level operation.
+
 ### repository
 All Spring Data JPA repository interfaces live here.
 

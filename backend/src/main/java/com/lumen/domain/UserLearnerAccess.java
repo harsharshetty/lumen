@@ -17,7 +17,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 
 import java.util.UUID;
 
@@ -40,18 +39,19 @@ public class UserLearnerAccess {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     @NonNull
-    @Setter
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "learner_id", nullable = false)
     @NonNull
-    @Setter
     private Learner learner;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "access_level", nullable = false)
     @NonNull
-    @Setter
     private LearnerAccessLevel accessLevel;
+
+    public void changeAccessLevel(@NonNull LearnerAccessLevel accessLevel) {
+        this.accessLevel = accessLevel;
+    }
 }
