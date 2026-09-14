@@ -5,19 +5,16 @@ import com.lumen.repository.LearningConceptRepository;
 import com.lumen.service.LearningConceptService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class LearningConceptServiceImpl implements LearningConceptService {
     private final LearningConceptRepository repository;
 
     @Override
-    @Transactional
     public LearningConcept createLearningConcept(String name) {
         return repository.save(new LearningConcept(name));
     }
