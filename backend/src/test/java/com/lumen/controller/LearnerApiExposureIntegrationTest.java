@@ -51,7 +51,7 @@ class LearnerApiExposureIntegrationTest {
 
         mockMvc.perform(post("/api/learners")
                         .with(oidcLogin())
-                        .with(csrf().asHeader())
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"displayName\":\"Aarohi\"}"))
                 .andExpect(status().isNotFound());
