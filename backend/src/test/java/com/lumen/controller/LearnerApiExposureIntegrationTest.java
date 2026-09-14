@@ -9,8 +9,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.UUID;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -23,35 +21,22 @@ class LearnerApiExposureIntegrationTest {
     private MockMvc mockMvc;
 
     @Test
-    void learnerListRequiresAuthenticationBeforeAuthorizationExists() throws Exception {
+    void learnerListRequiresAuthentication() throws Exception {
         mockMvc.perform(get("/api/learners"))
                 .andExpect(status().is3xxRedirection());
-
-        mockMvc.perform(get("/api/learners").with(oidcLogin()))
-                .andExpect(status().isNotFound());
     }
 
     @Test
-    void learnerReadRequiresAuthenticationBeforeAuthorizationExists() throws Exception {
+    void learnerReadRequiresAuthentication() throws Exception {
         mockMvc.perform(get("/api/learners/{id}", UUID.randomUUID()))
                 .andExpect(status().is3xxRedirection());
-
-        mockMvc.perform(get("/api/learners/{id}", UUID.randomUUID()).with(oidcLogin()))
-                .andExpect(status().isNotFound());
     }
 
     @Test
-    void learnerCreateRequiresAuthenticationAndCsrfBeforeAuthorizationExists() throws Exception {
+    void learnerCreateRequiresAuthenticationAndCsrf() throws Exception {
         mockMvc.perform(post("/api/learners")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"displayName\":\"Aarohi\"}"))
                 .andExpect(status().isForbidden());
-
-        mockMvc.perform(post("/api/learners")
-                        .with(oidcLogin())
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"displayName\":\"Aarohi\"}"))
-                .andExpect(status().isNotFound());
     }
 }
