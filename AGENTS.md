@@ -30,8 +30,9 @@ This repository is implemented by AI agents under human architectural and produc
 9. Every implementation PR must include its tests in the same PR.
 10. Backend and frontend application code must maintain 100% line and branch coverage; CI must fail if either falls below 100%.
 11. Coverage is a floor, not a substitute for meaningful assertions, edge-case testing, and invariant validation.
-12. Keep commits focused and readable.
-13. Keep the canonical domain class diagram in `docs/domain-model.md` synchronized with domain-model changes.
+12. Prefer Lombok for Java boilerplate such as getters, setters, and no-args constructors where it does not obscure domain intent or create an unsuitable constructor/API shape.
+13. Keep commits focused and readable.
+14. Keep the canonical domain class diagram in `docs/domain-model.md` synchronized with domain-model changes.
 
 ## Git and deployment workflow
 
