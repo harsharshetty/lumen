@@ -16,6 +16,22 @@ classDiagram
         UserRole platformRole
     }
 
+    class LoginIdentity {
+        UUID id
+        User user
+        IdentityProvider provider
+        String providerSubject
+        String verifiedEmail
+    }
+
+    class IdentityProvider {
+        <<enumeration>>
+        GOOGLE
+        APPLE
+        MICROSOFT
+        GITHUB
+    }
+
     class UserRole {
         <<enumeration>>
         USER
@@ -71,6 +87,8 @@ classDiagram
     }
 
     User --> UserRole : platformRole
+    User "1" <-- "1" LoginIdentity : user
+    LoginIdentity --> IdentityProvider : provider
     User "1" <-- "0..*" UserLearnerAccess : user
     Learner "1" <-- "0..*" UserLearnerAccess : learner
     UserLearnerAccess --> LearnerAccessLevel : accessLevel
@@ -84,11 +102,24 @@ classDiagram
 ## Agreed basic domain model
 
 ### User
-Represents an authenticated adult using Lumen. Authentication-provider identities are deliberately separate from this product-domain user so the domain remains provider-neutral.
+Represents an authenticated adult using Lumen. Authentication-provider identities are modeled separately so product-domain behavior remains provider-neutral.
 
 Platform role:
 - `USER` — normal product user.
 - `ADMIN` — platform administrator responsible for canonical product administration capabilities.
+
+### LoginIdentity
+Represents the one external OAuth/OIDC identity bound to one Lumen User in V1.
+
+Identity rules:
+- Identity is resolved by `(provider, providerSubject)`.
+- `(provider, providerSubject)` must be unique.
+- One LoginIdentity belongs to exactly one User.
+- One User has exactly one LoginIdentity in V1.
+- Matching email or display name across providers does not link or merge users.
+- `verifiedEmail` is provider profile data and is not the identity key.
+
+Supported provider values in the provider-neutral model are `GOOGLE`, `APPLE`, `MICROSOFT`, and `GITHUB`; concrete provider rollout is configured separately from domain semantics.
 
 ### UserLearnerAccess
 Represents an adult user's access to a learner.
@@ -152,6 +183,8 @@ Relationship:
 ## Current relationship map
 
 ```text
+LoginIdentity 1 -------- 1 User
+
 User 1 --------< UserLearnerAccess >-------- 1 Learner
 
 Subject 1 --------< Curriculum
@@ -162,6 +195,7 @@ Learner 1 --------< LearnerCurriculum >----- 1 Curriculum
 ```
 
 Notes:
+- `LoginIdentity -> User` is one-to-one in V1.
 - `UserLearnerAccess -> User` is many-to-one.
 - `UserLearnerAccess -> Learner` is many-to-one.
 - `CurriculumConcept -> LearningConcept` is many-to-one.
@@ -176,7 +210,6 @@ Do not create domain classes such as `Division`, `Fractions`, or `Multiplication
 ## Deferred modeling
 
 The following areas are intentionally not finalized yet and will be modeled in later iterations:
-- External login identity binding
 - Evidence
 - LearnerConceptState
 - LearningGoal
