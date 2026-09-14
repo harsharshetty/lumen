@@ -9,10 +9,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface LearnerCurriculumRepository extends JpaRepository<LearnerCurriculum, UUID> {
-    @EntityGraph(attributePaths = "curriculum")
+    @EntityGraph(attributePaths = {"curriculum", "curriculum.subject"})
     List<LearnerCurriculum> findByLearnerId(UUID learnerId);
 
-    @EntityGraph(attributePaths = "curriculum")
+    @EntityGraph(attributePaths = {"curriculum", "curriculum.subject"})
     Optional<LearnerCurriculum> findByLearnerIdAndCurriculumId(UUID learnerId, UUID curriculumId);
 
     boolean existsByLearnerIdAndCurriculumId(UUID learnerId, UUID curriculumId);
