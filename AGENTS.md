@@ -29,6 +29,7 @@ This repository is implemented by AI agents under human architectural and produc
 8. Preserve a clear separation between deterministic application/domain state and probabilistic AI interpretation.
 9. All implementation work should include appropriate tests.
 10. Keep commits focused and readable.
+11. Keep the canonical domain class diagram in `docs/domain-model.md` synchronized with domain-model changes.
 
 ## Git and deployment workflow
 
@@ -40,6 +41,7 @@ This repository is implemented by AI agents under human architectural and produc
 6. Deployment workflows must trigger only from `main` after a successful merge (or by an explicit manual workflow dispatch that deploys the `main` revision only).
 7. Branch protection/rulesets should enforce the above policy at GitHub level, not rely only on convention.
 8. Codex must never bypass branch protection, force-push `main`, or merge around failing required checks.
+9. A pull request must change no more than **8 files**. If a logical change would exceed 8 files, split it into a sequence of smaller, independently reviewable PRs. Do not use generated or mechanical changes as a reason to bypass this limit without explicit approval from Harsha.
 
 ## Current stack direction
 

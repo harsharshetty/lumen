@@ -4,6 +4,53 @@
 
 Learning concepts are generic domain entities. Specific concepts such as Division, Fractions, or Multiplication are records/data instances, not separate code-level domain types.
 
+## Canonical class diagram
+
+This diagram is the canonical representation of the currently implemented core domain model and must be updated whenever a domain-model PR changes these classes or relationships.
+
+```mermaid
+classDiagram
+    class Subject {
+        UUID id
+        String name
+    }
+
+    class Curriculum {
+        UUID id
+        String name
+        String gradeLevel
+        Subject subject
+    }
+
+    class LearningConcept {
+        UUID id
+        String name
+    }
+
+    class CurriculumConcept {
+        UUID id
+        Curriculum curriculum
+        LearningConcept learningConcept
+    }
+
+    class Learner {
+        UUID id
+        String displayName
+    }
+
+    class LearnerCurriculum {
+        UUID id
+        Learner learner
+        Curriculum curriculum
+    }
+
+    Subject "1" <-- "0..*" Curriculum : subject
+    Curriculum "1" <-- "0..*" CurriculumConcept : curriculum
+    LearningConcept "1" <-- "0..*" CurriculumConcept : learningConcept
+    Learner "1" <-- "0..*" LearnerCurriculum : learner
+    Curriculum "1" <-- "0..*" LearnerCurriculum : curriculum
+```
+
 ## Agreed basic domain model
 
 ### Subject
