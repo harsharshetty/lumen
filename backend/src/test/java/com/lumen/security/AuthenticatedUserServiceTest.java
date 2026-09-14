@@ -7,10 +7,15 @@ import com.lumen.domain.UserRole;
 import com.lumen.repository.LoginIdentityRepository;
 import com.lumen.repository.UserRepository;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -51,5 +56,37 @@ class AuthenticatedUserServiceTest {
         assertThat(resolved.getPlatformRole()).isEqualTo(UserRole.USER);
         verify(users).save(any(User.class));
         verify(identities).save(any(LoginIdentity.class));
+    }
+
+    @Test
+    void resolvesCurrentPersistedUserFromOidcAuthentication() {
+        LoginIdentityRepository identities = mock(LoginIdentityRepository.class);
+        AuthenticatedUserService service = new AuthenticatedUserService(identities, mock(UserRepository.class));
+        User existing = new User("Existing", UserRole.USER);
+        when(identities.findByProviderAndProviderSubject(IdentityProvider.GOOGLE, "subject-3"))
+                .thenReturn(Optional.of(new LoginIdentity(existing, IdentityProvider.GOOGLE, "subject-3")));
+        OAuth2AuthenticationToken authentication = authentication("google", "subject-3");
+
+        User resolved = service.currentUser(authentication);
+
+        assertThat(resolved).isSameAs(existing);
+    }
+
+    @Test
+    void rejectsAuthenticatedIdentityThatWasNotProvisioned() {
+        LoginIdentityRepository identities = mock(LoginIdentityRepository.class);
+        AuthenticatedUserService service = new AuthenticatedUserService(identities, mock(UserRepository.class));
+        when(identities.findByProviderAndProviderSubject(IdentityProvider.GITHUB, "missing"))
+                .thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.currentUser(authentication("github", "missing")))
+                .isInstanceOf(AuthenticationCredentialsNotFoundException.class)
+                .hasMessage("Authenticated identity is not provisioned");
+    }
+
+    private OAuth2AuthenticationToken authentication(String provider, String subject) {
+        OidcUser oidcUser = mock(OidcUser.class);
+        when(oidcUser.getSubject()).thenReturn(subject);
+        return new OAuth2AuthenticationToken(oidcUser, List.of(), provider);
     }
 }
