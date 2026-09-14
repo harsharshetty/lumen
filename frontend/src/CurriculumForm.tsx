@@ -116,8 +116,13 @@ export default function CurriculumForm({
 
         <Stack direction={{ xs: 'column-reverse', sm: 'row' }} justifyContent="flex-end" spacing={1.5}>
           <Button onClick={onCancel} disabled={isSaving}>Cancel</Button>
-          <Button type="submit" variant="contained" disabled={isSaving}>
-            {isSaving ? <CircularProgress size={20} aria-label="Saving curriculum" /> : saveLabel}
+          <Button
+            type="submit"
+            variant="contained"
+            disabled={isSaving}
+            aria-label={isSaving ? 'Saving curriculum' : undefined}
+          >
+            {isSaving ? <CircularProgress size={20} aria-hidden="true" /> : saveLabel}
           </Button>
         </Stack>
       </Stack>
