@@ -7,6 +7,9 @@ import com.lumen.domain.UserRole;
 import com.lumen.repository.LoginIdentityRepository;
 import com.lumen.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +24,14 @@ public class AuthenticatedUserService {
         return loginIdentityRepository.findByProviderAndProviderSubject(provider, providerSubject)
                 .map(LoginIdentity::getUser)
                 .orElseGet(() -> provision(provider, providerSubject, displayName));
+    }
+
+    public User currentUser(OAuth2AuthenticationToken authentication) {
+        OidcUser oidcUser = (OidcUser) authentication.getPrincipal();
+        IdentityProvider provider = OAuth2LoginSuccessHandler.toProvider(authentication.getAuthorizedClientRegistrationId());
+        return loginIdentityRepository.findByProviderAndProviderSubject(provider, oidcUser.getSubject())
+                .map(LoginIdentity::getUser)
+                .orElseThrow(() -> new AuthenticationCredentialsNotFoundException("Authenticated identity is not provisioned"));
     }
 
     private User provision(IdentityProvider provider, String providerSubject, String displayName) {
