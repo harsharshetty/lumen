@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import ParentOnboardingFlow from './ParentOnboardingFlow';
 import type { CurriculumChoice } from './LearnerCurriculumSelection';
@@ -74,16 +74,24 @@ describe('ParentOnboardingFlow', () => {
     expect(screen.getByText('CBSE Grade 3 Hindi')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Edit curricula' }));
-    expect(screen.getByRole('checkbox', { name: 'CBSE Grade 3 Hindi, Grade 3' })).toBeChecked();
-    fireEvent.click(screen.getByRole('checkbox', { name: 'CBSE Grade 3 Mathematics, Grade 3' }));
+    const hindi = screen.getByRole('checkbox', { name: 'CBSE Grade 3 Hindi, Grade 3' });
+    const math = screen.getByRole('checkbox', { name: 'CBSE Grade 3 Mathematics, Grade 3' });
+    expect(hindi).toBeChecked();
+    expect(math).not.toBeChecked();
+
+    fireEvent.click(math);
+    expect(math).toBeChecked();
     fireEvent.click(screen.getByRole('button', { name: 'Save curricula' }));
 
-    expect(await screen.findByText('CBSE Grade 3 Mathematics')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(onSaveCurricula).toHaveBeenCalledWith(
+        'anya',
+        expect.arrayContaining(['hindi-cbse', 'math-cbse']),
+      );
+    });
+    expect(await screen.findByRole('heading', { name: 'Anya' })).toBeInTheDocument();
+    expect(screen.getByText('CBSE Grade 3 Mathematics')).toBeInTheDocument();
     expect(screen.getByText('CBSE Grade 3 Hindi')).toBeInTheDocument();
-    expect(onSaveCurricula).toHaveBeenCalledWith(
-      'anya',
-      expect.arrayContaining(['hindi-cbse', 'math-cbse']),
-    );
 
     fireEvent.click(screen.getByRole('button', { name: 'Back to learners' }));
     expect(screen.getByRole('heading', { name: 'Learners' })).toBeInTheDocument();
