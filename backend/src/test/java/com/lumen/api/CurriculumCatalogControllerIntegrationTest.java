@@ -2,6 +2,7 @@ package com.lumen.api;
 
 import com.lumen.domain.Curriculum;
 import com.lumen.domain.IdentityProvider;
+import com.lumen.domain.LearningConcept;
 import com.lumen.domain.LoginIdentity;
 import com.lumen.domain.Subject;
 import com.lumen.domain.User;
@@ -9,6 +10,7 @@ import com.lumen.domain.UserRole;
 import com.lumen.repository.CurriculumConceptRepository;
 import com.lumen.repository.CurriculumRepository;
 import com.lumen.repository.LearnerCurriculumRepository;
+import com.lumen.repository.LearningConceptRepository;
 import com.lumen.repository.LoginIdentityRepository;
 import com.lumen.repository.SubjectRepository;
 import com.lumen.repository.UserRepository;
@@ -31,6 +33,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -49,6 +52,8 @@ class CurriculumCatalogControllerIntegrationTest {
     @Autowired
     private LearnerCurriculumRepository learnerCurriculumRepository;
     @Autowired
+    private LearningConceptRepository learningConceptRepository;
+    @Autowired
     private SubjectRepository subjectRepository;
     @Autowired
     private LoginIdentityRepository loginIdentityRepository;
@@ -60,6 +65,7 @@ class CurriculumCatalogControllerIntegrationTest {
         learnerCurriculumRepository.deleteAll();
         curriculumConceptRepository.deleteAll();
         curriculumRepository.deleteAll();
+        learningConceptRepository.deleteAll();
         subjectRepository.deleteAll();
         loginIdentityRepository.deleteAll();
         userRepository.deleteAll();
@@ -152,6 +158,70 @@ class CurriculumCatalogControllerIntegrationTest {
                 .andExpect(status().isNotFound());
 
         mockMvc.perform(post("/api/admin/curricula/{id}/activate", missing)
+                        .with(authenticatedAs("admin-subject"))
+                        .with(csrf()))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void adminAddsListsIdempotentlyAddsAndRemovesLearningConceptAssociations() throws Exception {
+        provisionUser("admin-subject", "Admin", UserRole.ADMIN);
+        Subject mathematics = subjectRepository.save(new Subject("Mathematics"));
+        Curriculum curriculum = curriculumRepository.save(new Curriculum("CBSE Mathematics", "Grade 3", mathematics));
+        LearningConcept fractions = learningConceptRepository.save(new LearningConcept("Fractions"));
+
+        mockMvc.perform(post("/api/admin/curricula/{curriculumId}/concepts/{conceptId}", curriculum.getId(), fractions.getId())
+                        .with(authenticatedAs("admin-subject"))
+                        .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(fractions.getId().toString()))
+                .andExpect(jsonPath("$.name").value("Fractions"));
+
+        mockMvc.perform(post("/api/admin/curricula/{curriculumId}/concepts/{conceptId}", curriculum.getId(), fractions.getId())
+                        .with(authenticatedAs("admin-subject"))
+                        .with(csrf()))
+                .andExpect(status().isOk());
+
+        assertThat(curriculumConceptRepository.findAll()).hasSize(1);
+
+        mockMvc.perform(get("/api/admin/curricula/{curriculumId}/concepts", curriculum.getId())
+                        .with(authenticatedAs("admin-subject")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].name").value("Fractions"));
+
+        mockMvc.perform(delete("/api/admin/curricula/{curriculumId}/concepts/{conceptId}", curriculum.getId(), fractions.getId())
+                        .with(authenticatedAs("admin-subject"))
+                        .with(csrf()))
+                .andExpect(status().isNoContent());
+
+        assertThat(curriculumConceptRepository.findAll()).isEmpty();
+    }
+
+    @Test
+    void normalUserCannotManageConceptAssociationsAndMissingResourcesReturnNotFound() throws Exception {
+        provisionUser("user-subject", "Parent", UserRole.USER);
+        provisionUser("admin-subject", "Admin", UserRole.ADMIN);
+        Subject mathematics = subjectRepository.save(new Subject("Mathematics"));
+        Curriculum curriculum = curriculumRepository.save(new Curriculum("CBSE Mathematics", "Grade 3", mathematics));
+        LearningConcept fractions = learningConceptRepository.save(new LearningConcept("Fractions"));
+
+        mockMvc.perform(post("/api/admin/curricula/{curriculumId}/concepts/{conceptId}", curriculum.getId(), fractions.getId())
+                        .with(authenticatedAs("user-subject"))
+                        .with(csrf()))
+                .andExpect(status().isForbidden());
+
+        UUID missing = UUID.randomUUID();
+        mockMvc.perform(post("/api/admin/curricula/{curriculumId}/concepts/{conceptId}", curriculum.getId(), missing)
+                        .with(authenticatedAs("admin-subject"))
+                        .with(csrf()))
+                .andExpect(status().isNotFound());
+
+        mockMvc.perform(get("/api/admin/curricula/{curriculumId}/concepts", missing)
+                        .with(authenticatedAs("admin-subject")))
+                .andExpect(status().isNotFound());
+
+        mockMvc.perform(delete("/api/admin/curricula/{curriculumId}/concepts/{conceptId}", curriculum.getId(), fractions.getId())
                         .with(authenticatedAs("admin-subject"))
                         .with(csrf()))
                 .andExpect(status().isNotFound());

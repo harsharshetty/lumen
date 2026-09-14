@@ -1,10 +1,14 @@
 package com.lumen.service;
 
 import com.lumen.domain.Curriculum;
+import com.lumen.domain.CurriculumConcept;
+import com.lumen.domain.LearningConcept;
 import com.lumen.domain.Subject;
 import com.lumen.domain.User;
 import com.lumen.domain.UserRole;
+import com.lumen.repository.CurriculumConceptRepository;
 import com.lumen.repository.CurriculumRepository;
+import com.lumen.repository.LearningConceptRepository;
 import com.lumen.repository.SubjectRepository;
 import com.lumen.security.AuthenticatedUserService;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +27,8 @@ import java.util.UUID;
 public class CurriculumCatalogService {
     private final CurriculumRepository curriculumRepository;
     private final SubjectRepository subjectRepository;
+    private final CurriculumConceptRepository curriculumConceptRepository;
+    private final LearningConceptRepository learningConceptRepository;
     private final AuthenticatedUserService authenticatedUserService;
 
     public List<Curriculum> listActive() {
@@ -55,6 +61,32 @@ public class CurriculumCatalogService {
         return curriculumRepository.save(curriculum);
     }
 
+    @Transactional(readOnly = true)
+    public List<CurriculumConcept> listConcepts(OAuth2AuthenticationToken authentication, UUID curriculumId) {
+        requireAdmin(authentication);
+        requireCurriculum(curriculumId);
+        return curriculumConceptRepository.findByCurriculumId(curriculumId);
+    }
+
+    @Transactional
+    public CurriculumConcept addConcept(OAuth2AuthenticationToken authentication, UUID curriculumId, UUID learningConceptId) {
+        requireAdmin(authentication);
+        Curriculum curriculum = requireCurriculum(curriculumId);
+        LearningConcept learningConcept = requireLearningConcept(learningConceptId);
+        return curriculumConceptRepository.findByCurriculumIdAndLearningConceptId(curriculumId, learningConceptId)
+                .orElseGet(() -> curriculumConceptRepository.save(new CurriculumConcept(curriculum, learningConcept)));
+    }
+
+    @Transactional
+    public void removeConcept(OAuth2AuthenticationToken authentication, UUID curriculumId, UUID learningConceptId) {
+        requireAdmin(authentication);
+        requireCurriculum(curriculumId);
+        CurriculumConcept association = curriculumConceptRepository
+                .findByCurriculumIdAndLearningConceptId(curriculumId, learningConceptId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Curriculum concept association not found"));
+        curriculumConceptRepository.delete(association);
+    }
+
     private void requireAdmin(OAuth2AuthenticationToken authentication) {
         User user = authenticatedUserService.currentUser(authentication);
         if (user.getPlatformRole() != UserRole.ADMIN) {
@@ -70,5 +102,10 @@ public class CurriculumCatalogService {
     private Curriculum requireCurriculum(UUID curriculumId) {
         return curriculumRepository.findById(curriculumId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Curriculum not found"));
+    }
+
+    private LearningConcept requireLearningConcept(UUID learningConceptId) {
+        return learningConceptRepository.findById(learningConceptId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Learning concept not found"));
     }
 }
