@@ -15,7 +15,13 @@ Curricula are reference data that will later drive assessment and planning. They
 
 Lumen will support external identity providers rather than managing passwords or MFA itself. The application model must remain provider-neutral so that providers such as Google, Apple, Microsoft, and GitHub can be supported.
 
-A Lumen `User` represents the authenticated human. A separate login-identity binding may be used internally to associate one user with one or more external authentication providers without treating those provider accounts as different Lumen users.
+A Lumen `User` represents one authenticated product identity. In V1, identity is resolved by the stable pair `(provider, providerSubject)`.
+
+Each external OAuth/OIDC identity maps to exactly one Lumen `User`, and each Lumen `User` has exactly one provider identity in V1. Repeated authentication with the same provider and provider subject resolves to the same Lumen `User`.
+
+Identities from different providers are treated as different Lumen users even when they present the same verified email address, display name, or other profile attributes. Lumen must not automatically link, merge, or reconcile cross-provider identities based on matching profile data.
+
+Cross-provider account linking or merging is not part of V1 and is not assumed as a future direction. Any such capability would require an explicit new product and architecture decision.
 
 ### Learners and access
 
@@ -65,6 +71,9 @@ User-defined/custom curricula are explicitly deferred. The initial product suppo
 
 ## Consequences
 
+- External identity resolution is keyed by `(provider, providerSubject)`.
+- Different provider identities remain different Lumen users even when profile attributes such as email or name match.
+- Cross-provider account linking/merging is not implemented or inferred in V1.
 - Lumen requires an admin-facing curriculum-management experience in V1.
 - Curriculum administration is a core product capability, not merely an operational database task.
 - Learner onboarding depends on the active curriculum catalog maintained by admins.
