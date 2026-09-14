@@ -15,10 +15,11 @@ function renderSelection(options?: {
   errorMessage?: string;
   onSave?: (selectedIds: string[]) => Promise<void>;
 }) {
+  const onSave = vi.fn(options?.onSave ?? (async () => undefined));
   const callbacks = {
     onRetry: vi.fn(),
     onBack: vi.fn(),
-    onSave: options?.onSave ?? vi.fn(async () => undefined),
+    onSave,
   };
 
   render(
