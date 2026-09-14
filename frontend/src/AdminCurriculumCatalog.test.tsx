@@ -1,5 +1,5 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import AdminCurriculumCatalog, { type CurriculumSummary } from './AdminCurriculumCatalog';
 
 const curricula: CurriculumSummary[] = [
@@ -41,6 +41,10 @@ function renderCatalog(options?: {
 
   return callbacks;
 }
+
+afterEach(() => {
+  cleanup();
+});
 
 describe('AdminCurriculumCatalog', () => {
   it('renders a dedicated loading state', () => {
