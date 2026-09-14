@@ -16,7 +16,6 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class CurriculumConceptServiceImpl implements CurriculumConceptService {
     private final CurriculumConceptRepository curriculumConceptRepository;
     private final CurriculumRepository curriculumRepository;
