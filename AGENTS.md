@@ -33,6 +33,7 @@ This repository is implemented by AI agents under human architectural and produc
 12. Prefer Lombok for Java boilerplate such as getters, setters, and no-args constructors where it does not obscure domain intent or create an unsuitable constructor/API shape.
 13. Keep commits focused and readable.
 14. Keep the canonical domain class diagram in `docs/domain-model.md` synchronized with domain-model changes.
+15. Keep detailed engineering rules in focused documents under `/docs`; keep this file concise and link to those documents instead of duplicating detailed guidance here.
 
 ## Git and deployment workflow
 
@@ -59,5 +60,6 @@ Before implementing significant changes, read:
 
 - `docs/product-principles.md`
 - `docs/architecture.md`
+- `docs/architecture-conventions.md`
 - `docs/domain-model.md`
 - `docs/decisions/ADR-001-tech-stack.md`
