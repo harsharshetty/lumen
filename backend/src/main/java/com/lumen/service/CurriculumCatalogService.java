@@ -61,6 +61,7 @@ public class CurriculumCatalogService {
         return curriculumRepository.save(curriculum);
     }
 
+    @Transactional(readOnly = true)
     public List<CurriculumConcept> listConcepts(OAuth2AuthenticationToken authentication, UUID curriculumId) {
         requireAdmin(authentication);
         requireCurriculum(curriculumId);
