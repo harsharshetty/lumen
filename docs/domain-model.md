@@ -10,6 +10,32 @@ This diagram is the canonical representation of the currently implemented core d
 
 ```mermaid
 classDiagram
+    class User {
+        UUID id
+        String displayName
+        UserRole platformRole
+    }
+
+    class UserRole {
+        <<enumeration>>
+        USER
+        ADMIN
+    }
+
+    class LearnerAccessLevel {
+        <<enumeration>>
+        OWNER
+        CONTRIBUTOR
+        VIEWER
+    }
+
+    class UserLearnerAccess {
+        UUID id
+        User user
+        Learner learner
+        LearnerAccessLevel accessLevel
+    }
+
     class Subject {
         UUID id
         String name
@@ -44,6 +70,10 @@ classDiagram
         Curriculum curriculum
     }
 
+    User --> UserRole : platformRole
+    User "1" <-- "0..*" UserLearnerAccess : user
+    Learner "1" <-- "0..*" UserLearnerAccess : learner
+    UserLearnerAccess --> LearnerAccessLevel : accessLevel
     Subject "1" <-- "0..*" Curriculum : subject
     Curriculum "1" <-- "0..*" CurriculumConcept : curriculum
     LearningConcept "1" <-- "0..*" CurriculumConcept : learningConcept
@@ -52,6 +82,27 @@ classDiagram
 ```
 
 ## Agreed basic domain model
+
+### User
+Represents an authenticated adult using Lumen. Authentication-provider identities are deliberately separate from this product-domain user so the domain remains provider-neutral.
+
+Platform role:
+- `USER` — normal product user.
+- `ADMIN` — platform administrator responsible for canonical product administration capabilities.
+
+### UserLearnerAccess
+Represents an adult user's access to a learner.
+
+Relationship:
+- One User may have access to many Learners.
+- One Learner may be accessible by many Users.
+- User and Learner are therefore many-to-many through UserLearnerAccess.
+- A given User may have only one active access relationship for a given Learner.
+
+Learner access levels:
+- `OWNER` — full learner administration, including access management.
+- `CONTRIBUTOR` — may update allowed learner academic configuration/content but not manage access or destructive lifecycle operations.
+- `VIEWER` — read-only access.
 
 ### Subject
 Represents a broad academic area such as Mathematics, Science, or English.
@@ -101,6 +152,8 @@ Relationship:
 ## Current relationship map
 
 ```text
+User 1 --------< UserLearnerAccess >-------- 1 Learner
+
 Subject 1 --------< Curriculum
 
 Curriculum 1 -----< CurriculumConcept >----- 1 LearningConcept
@@ -109,6 +162,8 @@ Learner 1 --------< LearnerCurriculum >----- 1 Curriculum
 ```
 
 Notes:
+- `UserLearnerAccess -> User` is many-to-one.
+- `UserLearnerAccess -> Learner` is many-to-one.
 - `CurriculumConcept -> LearningConcept` is many-to-one.
 - `Curriculum -> CurriculumConcept` is one-to-many.
 - `Learner -> LearnerCurriculum` is one-to-many.
@@ -121,6 +176,7 @@ Do not create domain classes such as `Division`, `Fractions`, or `Multiplication
 ## Deferred modeling
 
 The following areas are intentionally not finalized yet and will be modeled in later iterations:
+- External login identity binding
 - Evidence
 - LearnerConceptState
 - LearningGoal
