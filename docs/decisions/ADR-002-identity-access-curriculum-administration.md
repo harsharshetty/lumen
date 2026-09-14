@@ -23,6 +23,14 @@ Identities from different providers are treated as different Lumen users even wh
 
 Cross-provider account linking or merging is not part of V1 and is not assumed as a future direction. Any such capability would require an explicit new product and architecture decision.
 
+### Users and account lifecycle
+
+A user may deactivate their Lumen account only when that action would not leave any learner without at least one `OWNER`.
+
+If the user is the sole `OWNER` of any learner, account deactivation must be rejected until another `OWNER` is added for each affected learner.
+
+Deactivating a user does not delete shared learner data, curriculum selections, or historical learner state. The deactivated user loses product access, while learner data remains available to other authorized users.
+
 ### Learners and access
 
 `User` and `Learner` are distinct domain concepts.
@@ -36,6 +44,14 @@ Initial learner-level access levels are:
 - `VIEWER` — read-only access.
 
 Multiple users may hold `OWNER` access for the same learner.
+
+A learner is never hard-deleted in V1. Learner lifecycle uses archive/restore semantics:
+
+- an `OWNER` may archive a learner;
+- archived learners are excluded from normal active-learner flows;
+- learner data, `UserLearnerAccess`, curriculum selections, and future evidence/history remain persisted while archived;
+- an `OWNER` may restore an archived learner;
+- archive/restore operations must preserve the invariant that a learner always has at least one `OWNER` while it exists.
 
 Platform roles are separate from learner-level access. Initial platform roles are:
 
@@ -59,6 +75,20 @@ The `ADMIN` role owns the supported curriculum catalog and must have product cap
 
 Admin changes must be persisted as canonical product state and must not depend on contributions from individual parents or guardians.
 
+### Curriculum versioning
+
+Curriculum changes are versioned.
+
+Once a curriculum version is active and available for learner enrollment, substantive changes to curriculum content, structure, subject/grade/program meaning, or concept mapping create a new version rather than mutating the meaning of the existing version.
+
+A new version of the same curriculum is available only for new enrollments unless a separate migration decision is made later. Existing learner enrollments continue to reference the version they originally selected.
+
+This preserves historical meaning for future evidence, assessment, and learning-state data.
+
+Because curricula are curated by Lumen, version creation is expected to align primarily with academic-cycle changes rather than frequent mid-cycle edits. The product therefore does not require complex mid-cycle automatic migration behavior in V1.
+
+Purely non-semantic metadata corrections that do not change curriculum meaning may be updated in place.
+
 ### Learner curriculum selection
 
 A user with sufficient learner access chooses curricula explicitly for each learner. There is no automatic enrollment into all curricula for a board, grade, or subject.
@@ -74,8 +104,11 @@ User-defined/custom curricula are explicitly deferred. The initial product suppo
 - External identity resolution is keyed by `(provider, providerSubject)`.
 - Different provider identities remain different Lumen users even when profile attributes such as email or name match.
 - Cross-provider account linking/merging is not implemented or inferred in V1.
+- Account deactivation is blocked when it would orphan a learner without an OWNER.
+- Learners use archive/restore lifecycle semantics and are not hard-deleted in V1.
 - Lumen requires an admin-facing curriculum-management experience in V1.
 - Curriculum administration is a core product capability, not merely an operational database task.
+- Curriculum versions preserve historical learner meaning; new curriculum versions apply to new enrollments by default.
 - Learner onboarding depends on the active curriculum catalog maintained by admins.
 - Authorization must enforce both platform role checks and learner-level access checks.
 - Normal-user flows cannot mutate canonical curriculum data.
