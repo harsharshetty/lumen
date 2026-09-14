@@ -29,6 +29,17 @@
     <plugins>
       <plugin><groupId>org.springframework.boot</groupId><artifactId>spring-boot-maven-plugin</artifactId></plugin>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <systemPropertyVariables>
+            <spring.security.oauth2.client.registration.google.client-id>test-google-client</spring.security.oauth2.client.registration.google.client-id>
+            <spring.security.oauth2.client.registration.google.client-secret>test-google-secret</spring.security.oauth2.client.registration.google.client-secret>
+            <spring.security.oauth2.client.registration.google.scope>openid,profile,email</spring.security.oauth2.client.registration.google.scope>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+      <plugin>
         <groupId>org.jacoco</groupId><artifactId>jacoco-maven-plugin</artifactId><version>0.8.12</version>
         <executions>
           <execution><goals><goal>prepare-agent</goal></goals></execution>
