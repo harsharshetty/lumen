@@ -62,6 +62,18 @@ describe('ParentOnboardingFlow', () => {
     );
   });
 
+  it('returns to learner landing when backing out of first-time curriculum selection', async () => {
+    renderFlow();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Add learner' }));
+    fireEvent.change(screen.getByLabelText(/Learner name/), { target: { value: 'Anya' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Create learner' }));
+
+    expect(await screen.findByRole('heading', { name: 'Choose curricula for Anya' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Back' }));
+    expect(screen.getByRole('heading', { name: 'Add your first learner' })).toBeInTheDocument();
+  });
+
   it('opens an existing learner, edits curricula, persists the updated local view, and returns to learners', async () => {
     const learner = { id: 'anya', displayName: 'Anya' };
     const { onSaveCurricula } = renderFlow({
