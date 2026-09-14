@@ -56,7 +56,7 @@ Owns:
 - founding-team level prioritization inputs and business context;
 - approval of material changes to product semantics, privacy, authorization, data ownership, lifecycle, and system architecture;
 - definition and evolution of the first-parent-value goal and success criteria;
-- resolution of blockers escalated by Product Management, Platform Architecture, Quality, UX, Implementation, or Codex execution.
+- resolution of blockers escalated by Product Management, Platform Architecture, Quality, UX, Codex, or Implementation.
 
 This thread should make decisions, not perform routine implementation work.
 
@@ -76,7 +76,7 @@ Responsibilities:
 
 ### Implementation & Delivery
 
-Owns hands-on engineering execution on the main product critical path.
+Owns hands-on engineering execution on the primary product critical path.
 
 Responsibilities:
 - implement the highest-priority ready work selected by Product Management;
@@ -90,26 +90,24 @@ Implementation must not weaken tests, authorization, or architectural rules mere
 
 ### Codex / Engineering Execution
 
-Codex is a dedicated execution lane for **well-bounded, implementation-ready engineering work**. It exists to increase throughput without turning product, architecture, or quality decisions into implicit coding choices.
+Owns well-bounded implementation-ready execution work delegated through GitHub. Codex is an accelerator, not a decision-making authority.
 
-Typical Codex work includes:
-- diagnosing and fixing CI failures on an active PR;
-- implementing a clearly specified GitHub issue with approved acceptance criteria;
-- bounded refactors, migrations, test additions, security hardening, and build/CI corrections;
-- resolving reproducible defects where expected behavior is already defined;
-- preparing corrective commits on existing branches when ownership and scope are explicit.
+Suitable work includes:
+- CI failures and build corrections;
+- clearly specified feature slices with approved semantics and acceptance criteria;
+- bounded refactors and architecture remediations;
+- test infrastructure and persistence/migration work;
+- security/build hardening with an approved end state.
 
-Codex receives work through GitHub rather than private chat context. A handoff should identify the issue/PR, desired outcome, constraints, relevant ADRs/docs, and what must not be weakened or changed.
+Codex handoff contract:
+- PM, Implementation, Quality, Platform Architect, or CTO records the target issue/PR, desired outcome, constraints, acceptance criteria, and relevant authoritative docs/ADRs in GitHub;
+- Codex reconstructs context from GitHub rather than relying on private chat history;
+- Codex works only on branches/PRs and follows AGENTS.md, tests, CI gates, and repository reviewability rules;
+- Codex must not invent product semantics, weaken tests/security, or broaden scope merely to get CI green;
+- if implementation exposes genuine product/architecture ambiguity, Codex stops that decision locally and records exact evidence plus a recommended escalation in GitHub;
+- completion is a concrete GitHub signal: commit/PR update, tests/CI evidence, and a concise summary of what changed and why.
 
-Codex must:
-- treat GitHub, approved docs/ADRs, issue acceptance criteria, and current PR discussion as authoritative context;
-- make the smallest correct change that satisfies the handoff;
-- run relevant tests/checks and report the observable result through commits/PR comments;
-- preserve existing security, authorization, test, and architecture boundaries;
-- stop and escalate when the failure exposes unresolved product or architecture semantics instead of guessing;
-- never use a weaker test, disabled security control, or fabricated product behavior merely to obtain green CI.
-
-Codex does **not** own prioritization, product semantics, architecture policy, UX decisions, or independent acceptance of its own work. PM assigns or promotes tasks; Quality and Platform Architect retain independent review authority.
+Codex success is measured by safe completed execution and reduced critical-path time, not number of generated commits or tasks attempted.
 
 ### Quality, Test Coverage & Verification
 
@@ -163,23 +161,11 @@ UX success is not the number of mockups produced. It is reduction of user-facing
 3. Quality derives behavioral protection needs and creates quality backlog where needed.
 4. Platform Architect reviews architecture/design-pattern/practice conformance and creates remediation backlog for material deviations.
 5. Product Management evaluates feature, UX, quality, platform-architecture, security, and operational backlog together, classifies active work against the first-parent-value slice, and sets NOW / NEXT / LATER priority.
-6. Implementation remains on the main product critical path; PM may hand well-bounded, dependency-safe engineering work to Codex for parallel execution.
-7. Codex executes from GitHub context, updates the branch/PR, and reports results there; ambiguity is escalated rather than guessed.
-8. Quality verifies behavioral correctness and regression protection independently.
-9. Platform Architect reviews architectural integrity and maintainability of the resulting implementation.
-10. Product Management reprioritizes based on delivery progress, merged work, and findings.
-11. Any material ambiguity returns to CTO & Founding Team with a concrete recommendation rather than a blank-slate question.
-
-## Codex handoff contract
-
-A Codex handoff should be executable without reconstructing private chat history. It should include:
-- **Target:** issue/PR/branch to work on.
-- **Outcome:** the observable end state, such as `CI green`, `issue acceptance criteria satisfied`, or `migration verified`.
-- **Constraints:** relevant ADRs, security/authorization rules, file/PR limits, and explicitly forbidden shortcuts.
-- **Evidence:** failing job/test/log, reproduction steps, or current implementation state when available.
-- **Completion signal:** commit/PR update, tests run, CI result, and concise root-cause/change summary.
-
-If a task cannot be described this way because product or architecture intent is unresolved, it is not ready for Codex.
+6. Implementation owns the primary critical path; Codex and other explicitly assigned lanes execute additional dependency-safe work in parallel through GitHub handoffs.
+7. Quality verifies behavioral correctness and regression protection independently of whichever execution lane produced the change.
+8. Platform Architect reviews architectural integrity and maintainability of the resulting implementation.
+9. Product Management reprioritizes based on delivery progress, merged work, and findings.
+10. Any material ambiguity returns to CTO & Founding Team with a concrete recommendation rather than a blank-slate question.
 
 ## Escalation rules
 
@@ -189,12 +175,13 @@ If a task cannot be described this way because product or architecture intent is
 - Product Management controls execution priority; Platform Architect, Quality, and UX supply risk/readiness signals but do not independently reorder the implementation queue.
 - Implementation and Codex may choose technical details within approved boundaries, but may not decide material product semantics or architecture policy.
 - A thread should not block another thread merely because its own work is incomplete; only real dependencies or material risk should block parallel progress.
+- A GitHub handoff to Codex is not considered active execution until a concrete execution signal exists (for example a branch/commit/PR update or an explicit blocker posted by the Codex lane). Recording the handoff alone is not progress.
 
 ## Source of truth
 
 Repository artifacts are canonical for cross-thread coordination:
 - `/docs` and ADRs: approved product/architecture intent and the current project-wide goal;
-- GitHub issues: implementation, Codex execution handoffs, UX, quality, architectural-remediation, and operational backlog;
+- GitHub issues: implementation, Codex handoffs, UX, quality, architectural-remediation, and operational backlog;
 - priority annotations/status maintained by Product Management: execution order and relation to first-parent-value;
 - pull requests and `main`: implementation state;
 - CI/test reports: objective quality state.
