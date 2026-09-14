@@ -128,31 +128,31 @@ export default function AdminCurriculumCatalog({
         </Stack>
       </Stack>
 
-      <Dialog
-        open={pendingDeactivation !== null}
-        onClose={() => setPendingDeactivation(null)}
-        aria-labelledby="deactivate-curriculum-title"
-      >
-        <DialogTitle id="deactivate-curriculum-title">Deactivate curriculum?</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            This curriculum will no longer be available for new learner selection. Existing learner associations are retained.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setPendingDeactivation(null)}>Cancel</Button>
-          <Button
-            onClick={() => {
-              if (pendingDeactivation !== null) {
+      {pendingDeactivation !== null && (
+        <Dialog
+          open
+          onClose={() => setPendingDeactivation(null)}
+          aria-labelledby="deactivate-curriculum-title"
+        >
+          <DialogTitle id="deactivate-curriculum-title">Deactivate curriculum?</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              This curriculum will no longer be available for new learner selection. Existing learner associations are retained.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setPendingDeactivation(null)}>Cancel</Button>
+            <Button
+              onClick={() => {
                 onToggleStatus(pendingDeactivation.id, 'INACTIVE');
-              }
-              setPendingDeactivation(null);
-            }}
-          >
-            Deactivate curriculum
-          </Button>
-        </DialogActions>
-      </Dialog>
+                setPendingDeactivation(null);
+              }}
+            >
+              Deactivate curriculum
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
     </Container>
   );
 }
