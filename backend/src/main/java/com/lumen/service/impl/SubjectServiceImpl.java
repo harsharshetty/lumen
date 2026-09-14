@@ -18,18 +18,18 @@ public class SubjectServiceImpl implements SubjectService {
 
     @Override
     @Transactional
-    public Subject create(String name) {
+    public Subject createSubject(String name) {
         return repository.save(new Subject(name));
     }
 
     @Override
-    public Subject get(UUID id) {
+    public Subject getSubject(UUID id) {
         return repository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Subject not found: " + id));
     }
 
     @Override
-    public List<Subject> list() {
+    public List<Subject> listSubjects() {
         return repository.findAll();
     }
 }

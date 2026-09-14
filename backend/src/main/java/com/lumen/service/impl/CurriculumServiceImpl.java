@@ -21,20 +21,20 @@ public class CurriculumServiceImpl implements CurriculumService {
 
     @Override
     @Transactional
-    public Curriculum create(String name, String gradeLevel, UUID subjectId) {
+    public Curriculum createCurriculum(String name, String gradeLevel, UUID subjectId) {
         Subject subject = subjectRepository.findById(subjectId)
                 .orElseThrow(() -> new IllegalArgumentException("Subject not found: " + subjectId));
         return curriculumRepository.save(new Curriculum(name, gradeLevel, subject));
     }
 
     @Override
-    public Curriculum get(UUID id) {
+    public Curriculum getCurriculum(UUID id) {
         return curriculumRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Curriculum not found: " + id));
     }
 
     @Override
-    public List<Curriculum> list() {
+    public List<Curriculum> listCurricula() {
         return curriculumRepository.findAll();
     }
 }

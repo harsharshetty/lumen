@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface LearningConceptService {
-    LearningConcept create(String name);
-    LearningConcept get(UUID id);
-    List<LearningConcept> list();
+    LearningConcept createLearningConcept(String name);
+    LearningConcept getLearningConcept(UUID id);
+    List<LearningConcept> listLearningConcepts();
 }

@@ -35,14 +35,14 @@ class CoreServicesTest {
         when(repository.findById(id)).thenReturn(Optional.of(saved));
         when(repository.findAll()).thenReturn(List.of(saved));
 
-        assertThat(service.create("Mathematics")).isSameAs(saved);
-        assertThat(service.get(id)).isSameAs(saved);
-        assertThat(service.list()).containsExactly(saved);
+        assertThat(service.createSubject("Mathematics")).isSameAs(saved);
+        assertThat(service.getSubject(id)).isSameAs(saved);
+        assertThat(service.listSubjects()).containsExactly(saved);
         verify(repository).save(any(Subject.class));
 
         UUID missingId = UUID.randomUUID();
         when(repository.findById(missingId)).thenReturn(Optional.empty());
-        assertThatThrownBy(() -> service.get(missingId))
+        assertThatThrownBy(() -> service.getSubject(missingId))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Subject not found: " + missingId);
     }
@@ -62,20 +62,20 @@ class CoreServicesTest {
         when(curriculumRepository.findById(curriculumId)).thenReturn(Optional.of(saved));
         when(curriculumRepository.findAll()).thenReturn(List.of(saved));
 
-        assertThat(service.create("CBSE Grade 3 Mathematics", "3", subjectId)).isSameAs(saved);
-        assertThat(service.get(curriculumId)).isSameAs(saved);
-        assertThat(service.list()).containsExactly(saved);
+        assertThat(service.createCurriculum("CBSE Grade 3 Mathematics", "3", subjectId)).isSameAs(saved);
+        assertThat(service.getCurriculum(curriculumId)).isSameAs(saved);
+        assertThat(service.listCurricula()).containsExactly(saved);
         verify(curriculumRepository).save(any(Curriculum.class));
 
         UUID missingSubjectId = UUID.randomUUID();
         when(subjectRepository.findById(missingSubjectId)).thenReturn(Optional.empty());
-        assertThatThrownBy(() -> service.create("Olympiad", "3", missingSubjectId))
+        assertThatThrownBy(() -> service.createCurriculum("Olympiad", "3", missingSubjectId))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Subject not found: " + missingSubjectId);
 
         UUID missingCurriculumId = UUID.randomUUID();
         when(curriculumRepository.findById(missingCurriculumId)).thenReturn(Optional.empty());
-        assertThatThrownBy(() -> service.get(missingCurriculumId))
+        assertThatThrownBy(() -> service.getCurriculum(missingCurriculumId))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Curriculum not found: " + missingCurriculumId);
     }
@@ -91,14 +91,14 @@ class CoreServicesTest {
         when(repository.findById(id)).thenReturn(Optional.of(saved));
         when(repository.findAll()).thenReturn(List.of(saved));
 
-        assertThat(service.create("Fractions")).isSameAs(saved);
-        assertThat(service.get(id)).isSameAs(saved);
-        assertThat(service.list()).containsExactly(saved);
+        assertThat(service.createLearningConcept("Fractions")).isSameAs(saved);
+        assertThat(service.getLearningConcept(id)).isSameAs(saved);
+        assertThat(service.listLearningConcepts()).containsExactly(saved);
         verify(repository).save(any(LearningConcept.class));
 
         UUID missingId = UUID.randomUUID();
         when(repository.findById(missingId)).thenReturn(Optional.empty());
-        assertThatThrownBy(() -> service.get(missingId))
+        assertThatThrownBy(() -> service.getLearningConcept(missingId))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Learning concept not found: " + missingId);
     }

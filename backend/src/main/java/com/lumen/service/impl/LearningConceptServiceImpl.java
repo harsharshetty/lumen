@@ -18,18 +18,18 @@ public class LearningConceptServiceImpl implements LearningConceptService {
 
     @Override
     @Transactional
-    public LearningConcept create(String name) {
+    public LearningConcept createLearningConcept(String name) {
         return repository.save(new LearningConcept(name));
     }
 
     @Override
-    public LearningConcept get(UUID id) {
+    public LearningConcept getLearningConcept(UUID id) {
         return repository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Learning concept not found: " + id));
     }
 
     @Override
-    public List<LearningConcept> list() {
+    public List<LearningConcept> listLearningConcepts() {
         return repository.findAll();
     }
 }
