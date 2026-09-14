@@ -42,6 +42,43 @@ Platform roles are separate from learner-level access. Initial platform roles ar
 - `USER`
 - `ADMIN`
 
+### Learner invitations and sharing
+
+Access to an existing learner is never inferred from OAuth identity, matching email/name attributes, or learner-profile similarity. Existing learner access is established through an explicit invitation flow.
+
+Only a current `OWNER` may invite another adult to a learner or revoke an existing user's learner access. `CONTRIBUTOR` and `VIEWER` cannot invite or revoke users.
+
+An `OWNER` may invite another adult with any learner access level:
+
+- `OWNER`
+- `CONTRIBUTOR`
+- `VIEWER`
+
+Invitations are sent to a specific email address. To accept an invitation, the invitee must authenticate through a supported OAuth/OIDC provider whose verified email matches the invited email address.
+
+Authentication alone does not grant learner access. After authentication, the invitee must explicitly accept the invitation before `UserLearnerAccess` is created or changed.
+
+A learner invitation is:
+
+- valid for 7 days;
+- single-use;
+- explicitly declineable by the invitee;
+- revocable by an `OWNER` at any time while pending.
+
+Invitation terminal states include accepted, declined, expired, and revoked.
+
+At most one valid pending invitation may exist for the same learner and invited email at a time. If an `OWNER` resends an invitation, the previous pending invitation is automatically invalidated and a new 7-day invitation is issued without requiring a separate revoke action.
+
+If the invited OAuth identity already maps to an existing Lumen `User`, accepting the invitation attaches that existing user to the learner; no new user is created.
+
+If that user already has `UserLearnerAccess` for the learner, accepting the invitation updates the existing access level to the level specified by the newly accepted invitation rather than creating a duplicate access record.
+
+An `OWNER` may later change another user's learner access level among `OWNER`, `CONTRIBUTOR`, and `VIEWER`, or revoke that user's learner access.
+
+A learner must always have at least one `OWNER`. Any revoke, demotion, or self-removal operation that would leave the learner with zero owners must be rejected.
+
+For V1, duplicate learner profiles created independently by different users are not automatically matched or merged. The intended sharing path is for an existing owner to invite the other adult. Automatic learner matching/merging is deferred.
+
 ### Curriculum ownership
 
 Curricula are canonical, system-managed reference data.
@@ -78,4 +115,8 @@ User-defined/custom curricula are explicitly deferred. The initial product suppo
 - Normal-user flows cannot mutate canonical curriculum data.
 - Signing in through a different OAuth provider creates/resolves a different Lumen user, even if email or name matches an existing user.
 - Cross-provider identity linking/merging is explicitly deferred.
+- Existing learner access requires explicit owner-driven invitation and invitee acceptance.
+- Invitation acceptance must verify the authenticated OAuth identity's verified email against the invited email.
+- Learner access administration must preserve the invariant that every learner has at least one owner.
+- Duplicate learners are not automatically reconciled in V1.
 - Future custom/user-defined curricula can be introduced later as a separate capability without weakening the canonical catalog model.
