@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -193,14 +192,15 @@ class LearnerAuthorizationBoundaryTest {
         }
 
         @GetMapping("/{learnerId}")
-        String read(OAuth2AuthenticationToken authentication, @PathVariable UUID learnerId) {
-            return authorizationService.requireAccess(authentication, learnerId, LearnerAccessLevel.VIEWER)
-                    .getDisplayName();
+        UUID read(OAuth2AuthenticationToken authentication, @PathVariable UUID learnerId) {
+            authorizationService.requireAccess(authentication, learnerId, LearnerAccessLevel.VIEWER);
+            return learnerId;
         }
 
         @PostMapping("/{learnerId}")
         void mutate(OAuth2AuthenticationToken authentication, @PathVariable UUID learnerId) {
-            Learner learner = authorizationService.requireAccess(authentication, learnerId, LearnerAccessLevel.CONTRIBUTOR);
+            authorizationService.requireAccess(authentication, learnerId, LearnerAccessLevel.CONTRIBUTOR);
+            Learner learner = learnerRepository.findById(learnerId).orElseThrow();
             learner.setDisplayName("Updated");
             learnerRepository.save(learner);
         }
