@@ -5,17 +5,19 @@ This repository is implemented by AI agents under human architectural and produc
 ## Roles
 
 - **Product owner / architect:** Harsha. Makes product, architecture, and design decisions. Does not perform routine coding or setup work.
-- **Architecture partner / control plane:** ChatGPT. Harsha interacts here as the primary interface. ChatGPT helps evaluate trade-offs, records architectural decisions, creates implementation tasks in GitHub, reviews Codex output, and maintains design intent.
-- **Implementation agent:** Codex. Performs repository setup, coding, tests, CI/CD, deployment, and implementation changes from GitHub/Codex Cloud tasks.
+- **Architecture partner / control plane:** ChatGPT. Harsha interacts here as the primary interface. ChatGPT helps evaluate trade-offs, records architectural decisions, creates implementation tasks in GitHub, reviews agent output, and maintains design intent.
+- **Implementation & Delivery lane:** Codex. Performs repository setup, backend/product coding, tests, CI/CD, deployment, integration work, and implementation changes from GitHub/Codex Cloud tasks.
+- **UX & Product Design delivery lane:** May independently implement frontend-only UX slices that are already grounded in approved product semantics and an implementation-ready UX contract. This lane owns React/Material UI presentation, interaction states, responsive behavior, accessibility, copy, and frontend tests. It must not invent product semantics, expose unsecured product capability, or create fake production backends while waiting for real APIs.
 - **Editor:** Zed is optional for inspection of local files and diffs. Harsha should not be required to use Zed as a second conversational control surface.
 
 ## Working model
 
 1. Harsha discusses product, architecture, and design decisions with ChatGPT.
 2. ChatGPT records approved decisions in `/docs` and converts implementation work into GitHub issues/PR task context.
-3. Codex consumes repository context (`AGENTS.md`, `/docs`, issue/PR instructions), works on a feature branch, runs tests, and updates the PR.
-4. ChatGPT reviews the resulting GitHub changes and reports back to Harsha here.
-5. Harsha should not need to copy prompts between ChatGPT and Codex or copy Codex output back into ChatGPT.
+3. Implementation & Delivery and UX & Product Design may work in parallel when their scopes are dependency-safe. UX may build reusable, production-safe frontend slices against isolated typed fixtures/mocks before backend APIs exist; backend/API integration remains a separate handoff step.
+4. Coding agents consume repository context (`AGENTS.md`, `/docs`, issue/PR instructions), work on dedicated feature branches, run tests, and update PRs.
+5. ChatGPT reviews the resulting GitHub changes and reports back to Harsha here.
+6. Harsha should not need to copy prompts between ChatGPT and coding agents or copy agent output back into ChatGPT.
 
 ## Operating principles
 
@@ -34,6 +36,7 @@ This repository is implemented by AI agents under human architectural and produc
 13. Keep commits focused and readable.
 14. Keep the canonical domain class diagram in `docs/domain-model.md` synchronized with domain-model changes.
 15. Keep detailed engineering rules in focused documents under `/docs`; keep this file concise and link to those documents instead of duplicating detailed guidance here.
+16. A UX mockup is not implementation authority by itself. UX implementation must be traceable to approved product semantics and a concrete GitHub UX contract; unsupported mockup-only behavior must not be implemented.
 
 ## Git and deployment workflow
 
@@ -44,7 +47,7 @@ This repository is implemented by AI agents under human architectural and produc
 5. CI must run on pull requests before merge.
 6. Deployment workflows must trigger only from `main` after a successful merge (or by an explicit manual workflow dispatch that deploys the `main` revision only).
 7. Branch protection/rulesets should enforce the above policy at GitHub level, not rely only on convention.
-8. Codex must never bypass branch protection, force-push `main`, or merge around failing required checks.
+8. No coding agent may bypass branch protection, force-push `main`, or merge around failing required checks.
 9. A pull request must change no more than **8 files**. If a logical change would exceed 8 files, split it into a sequence of smaller, independently reviewable PRs. Do not use generated or mechanical changes as a reason to bypass this limit without explicit approval from Harsha.
 
 ## Current stack direction
