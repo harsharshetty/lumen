@@ -15,7 +15,13 @@ Curricula are reference data that will later drive assessment and planning. They
 
 Lumen will support external identity providers rather than managing passwords or MFA itself. The application model must remain provider-neutral so that providers such as Google, Apple, Microsoft, and GitHub can be supported.
 
-A Lumen `User` represents the authenticated human. A separate login-identity binding may be used internally to associate one user with one or more external authentication providers without treating those provider accounts as different Lumen users.
+For V1, one external OAuth/OIDC identity is exactly one Lumen `User`. Identity is determined by the pair `(provider, providerSubject)`.
+
+Lumen will not attempt to determine whether identities from two different providers belong to the same real-world person. Even when two provider identities expose the same email address or display name, they are separate Lumen users.
+
+There is no cross-provider account linking, merging, or reconciliation in V1. Supporting those capabilities later requires a separate product and architecture decision.
+
+A provider-neutral login identity representation may still be kept separate from the `User` entity for technical isolation, but the V1 cardinality is one login identity to one user and one user to one login identity.
 
 ### Learners and access
 
@@ -70,4 +76,6 @@ User-defined/custom curricula are explicitly deferred. The initial product suppo
 - Learner onboarding depends on the active curriculum catalog maintained by admins.
 - Authorization must enforce both platform role checks and learner-level access checks.
 - Normal-user flows cannot mutate canonical curriculum data.
+- Signing in through a different OAuth provider creates/resolves a different Lumen user, even if email or name matches an existing user.
+- Cross-provider identity linking/merging is explicitly deferred.
 - Future custom/user-defined curricula can be introduced later as a separate capability without weakening the canonical catalog model.
