@@ -4,6 +4,7 @@ import com.lumen.service.CurriculumCatalogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -48,5 +49,29 @@ public class CurriculumCatalogController {
     @PostMapping("/api/admin/curricula/{curriculumId}/deactivate")
     CurriculumResponse deactivate(OAuth2AuthenticationToken authentication, @PathVariable UUID curriculumId) {
         return CurriculumResponse.from(curriculumCatalogService.setActive(authentication, curriculumId, false));
+    }
+
+    @GetMapping("/api/admin/curricula/{curriculumId}/concepts")
+    List<LearningConceptResponse> listConcepts(OAuth2AuthenticationToken authentication,
+                                               @PathVariable UUID curriculumId) {
+        return curriculumCatalogService.listConcepts(authentication, curriculumId).stream()
+                .map(LearningConceptResponse::from)
+                .toList();
+    }
+
+    @PostMapping("/api/admin/curricula/{curriculumId}/concepts/{learningConceptId}")
+    LearningConceptResponse addConcept(OAuth2AuthenticationToken authentication,
+                                       @PathVariable UUID curriculumId,
+                                       @PathVariable UUID learningConceptId) {
+        return LearningConceptResponse.from(
+                curriculumCatalogService.addConcept(authentication, curriculumId, learningConceptId));
+    }
+
+    @DeleteMapping("/api/admin/curricula/{curriculumId}/concepts/{learningConceptId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void removeConcept(OAuth2AuthenticationToken authentication,
+                       @PathVariable UUID curriculumId,
+                       @PathVariable UUID learningConceptId) {
+        curriculumCatalogService.removeConcept(authentication, curriculumId, learningConceptId);
     }
 }
