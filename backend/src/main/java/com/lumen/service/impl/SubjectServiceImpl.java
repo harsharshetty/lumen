@@ -5,19 +5,16 @@ import com.lumen.repository.SubjectRepository;
 import com.lumen.service.SubjectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class SubjectServiceImpl implements SubjectService {
     private final SubjectRepository repository;
 
     @Override
-    @Transactional
     public Subject createSubject(String name) {
         return repository.save(new Subject(name));
     }
