@@ -30,8 +30,8 @@ Responsibilities:
 - backend compile/test/integration-test and JaCoCo coverage enforcement
 - frontend install, dependency audit, type-check, tests/coverage, and build
 - CodeQL static analysis for Java/Kotlin and JavaScript/TypeScript
-- Trivy filesystem scanning for dependency vulnerabilities, committed secrets, and configuration issues
-- production backend image build and Trivy image vulnerability scan
+- Trivy filesystem scanning for committed secrets and configuration issues
+- production backend image build and Trivy vulnerability scan, including resolved Java application dependencies in the deployable artifact
 - Playwright browser E2E after correctness and security gates succeed
 - publish CI status used as the merge/deployment gate
 
@@ -40,11 +40,13 @@ Responsibilities:
 Security checks are additive to the existing correctness and coverage gates.
 
 - CodeQL findings are uploaded to GitHub code scanning and the CodeQL job must complete successfully.
-- Trivy source and container scans fail CI for known `HIGH` or `CRITICAL` findings that have fixes available.
-- npm dependency audits fail CI at `HIGH` or `CRITICAL` severity.
-- Trivy secret and misconfiguration detection runs in the normal PR/main delivery path.
+- Backend Java/Maven dependency and base-image vulnerability detection is performed against the actual production container image; `HIGH` or `CRITICAL` fixable findings fail CI.
+- Frontend and E2E npm dependency audits fail CI at `HIGH` or `CRITICAL` severity.
+- Trivy secret and misconfiguration detection runs in the normal PR/main delivery path and fails the security job for blocking findings.
 - Third-party GitHub Actions are referenced by immutable commit SHA, with the corresponding release line documented in comments.
 - Dependabot checks Maven, frontend npm, E2E npm, GitHub Actions, and Docker dependencies weekly.
+
+Scanning the resolved backend dependencies from the production image is intentional: it verifies the Java libraries that are actually shipped while avoiding a second remote Maven-resolution path inside the source scanner. The normal Maven build remains a separate correctness gate.
 
 A security gate must not be bypassed merely to make a PR green. A false positive or risk acceptance requires an explicit documented exception with rationale, scope, owner, and follow-up; critical authorization/privacy issues remain release blocking.
 
