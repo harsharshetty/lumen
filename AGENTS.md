@@ -16,6 +16,7 @@ This repository is implemented by AI agents under human architectural and produc
 3. Codex consumes repository context (`AGENTS.md`, `/docs`, issue/PR instructions), works on a feature branch, runs tests, and updates the PR.
 4. ChatGPT reviews the resulting GitHub changes and reports back to Harsha here.
 5. Harsha should not need to copy prompts between ChatGPT and Codex or copy Codex output back into ChatGPT.
+6. Architecture/Product Design, Product Management & Prioritization, Implementation & Delivery, and Quality/Test Coverage coordinate through GitHub according to `docs/operating-model.md`; no thread may rely on private conversational context from another thread as the source of truth.
 
 ## Operating principles
 
@@ -59,6 +60,7 @@ This repository is implemented by AI agents under human architectural and produc
 Before implementing significant changes, read:
 
 - `docs/product-principles.md`
+- `docs/operating-model.md`
 - `docs/architecture.md`
 - `docs/architecture-conventions.md`
 - `docs/domain-model.md`
