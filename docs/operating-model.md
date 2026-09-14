@@ -107,6 +107,8 @@ Codex handoff contract:
 - if implementation exposes genuine product/architecture ambiguity, Codex stops that decision locally and records exact evidence plus a recommended escalation in GitHub;
 - completion is a concrete GitHub signal: commit/PR update, tests/CI evidence, and a concise summary of what changed and why.
 
+Codex capacity is opportunistic, not guaranteed. A Codex-assigned task must always have a fallback owner. If Codex is unavailable, rate-limited, fails to pick up the work, or cannot continue within the active delivery window, ownership reverts immediately to the appropriate implementation lane rather than allowing the project critical path to idle.
+
 Codex success is measured by safe completed execution and reduced critical-path time, not number of generated commits or tasks attempted.
 
 ### Quality, Test Coverage & Verification
@@ -176,6 +178,7 @@ UX success is not the number of mockups produced. It is reduction of user-facing
 - Implementation and Codex may choose technical details within approved boundaries, but may not decide material product semantics or architecture policy.
 - A thread should not block another thread merely because its own work is incomplete; only real dependencies or material risk should block parallel progress.
 - A GitHub handoff to Codex is not considered active execution until a concrete execution signal exists (for example a branch/commit/PR update or an explicit blocker posted by the Codex lane). Recording the handoff alone is not progress.
+- Codex unavailability, rate limits, or exhausted usage windows must never leave critical-path work ownerless. The fallback owner resumes immediately unless PM explicitly assigns another execution lane.
 
 ## Source of truth
 
