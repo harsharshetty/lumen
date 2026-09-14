@@ -1,5 +1,5 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import App from './App';
 
 let latestProps: any;
@@ -23,6 +23,10 @@ describe('App', () => {
     latestProps = undefined;
     vi.restoreAllMocks();
     Object.defineProperty(document, 'cookie', { configurable: true, writable: true, value: '' });
+  });
+
+  afterEach(() => {
+    cleanup();
   });
 
   it('loads learners, active curricula and existing learner selections', async () => {
