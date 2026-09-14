@@ -35,4 +35,8 @@ public class Curriculum {
     @NonNull
     @Setter
     private Subject subject;
+
+    @Column(nullable = false)
+    @Setter
+    private boolean active;
 }
