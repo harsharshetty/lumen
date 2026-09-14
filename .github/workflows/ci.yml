@@ -21,7 +21,7 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-      - name: Build and test backend
+      - name: Build, test and enforce backend coverage
         run: mvn --batch-mode verify
 
   frontend:
@@ -38,7 +38,7 @@ jobs:
         run: npm install --no-audit --no-fund
       - name: Type check
         run: npm run typecheck
-      - name: Test
-        run: npm test -- --run
+      - name: Test and enforce frontend coverage
+        run: npm run test:coverage
       - name: Build frontend
         run: npm run build

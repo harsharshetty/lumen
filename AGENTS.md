@@ -27,9 +27,11 @@ This repository is implemented by AI agents under human architectural and produc
 6. Keep LLM providers behind an application abstraction. Domain logic and persisted learning state must not depend on one model vendor.
 7. Learning concepts such as Division, Fractions, and Multiplication are data instances, not separate domain classes.
 8. Preserve a clear separation between deterministic application/domain state and probabilistic AI interpretation.
-9. All implementation work should include appropriate tests.
-10. Keep commits focused and readable.
-11. Keep the canonical domain class diagram in `docs/domain-model.md` synchronized with domain-model changes.
+9. Every implementation PR must include its tests in the same PR.
+10. Backend and frontend application code must maintain 100% line and branch coverage; CI must fail if either falls below 100%.
+11. Coverage is a floor, not a substitute for meaningful assertions, edge-case testing, and invariant validation.
+12. Keep commits focused and readable.
+13. Keep the canonical domain class diagram in `docs/domain-model.md` synchronized with domain-model changes.
 
 ## Git and deployment workflow
 
