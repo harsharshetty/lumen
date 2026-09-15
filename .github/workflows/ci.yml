@@ -42,6 +42,13 @@ jobs:
         run: npm run test:coverage
       - name: Build frontend
         run: npm run build
+      - name: Verify approved sign-in artwork is embedded
+        run: |
+          if find dist -type f -name 'signin-left-reference*.jpg' -print -quit | grep -q .; then
+            echo 'Approved sign-in artwork was emitted as a separate runtime asset' >&2
+            exit 1
+          fi
+          grep -R -q 'data:image/jpeg;base64' dist/assets
 
   container:
     runs-on: ubuntu-latest
