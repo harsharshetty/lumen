@@ -14,8 +14,7 @@ test('isolates one parent learner from another authenticated user', async ({ bro
   const learnerName = `Isolation learner ${suffix}`;
 
   const unauthenticated = await request.get('/api/learners', { maxRedirects: 0 });
-  expect(unauthenticated.status()).toBe(302);
-  expect(unauthenticated.headers().location).toContain('/oauth2/authorization/google');
+  expect(unauthenticated.status()).toBe(403);
 
   const ownerContext = await browser.newContext(authenticatedContextOptions(ownerSubject, 'Owner A'));
   const ownerPage = await ownerContext.newPage();
