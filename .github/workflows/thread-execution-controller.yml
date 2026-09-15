@@ -1,0 +1,45 @@
+name: Thread execution controller
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Only log wake decisions without invoking the adapter'
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: lumen-thread-execution-controller
+  cancel-in-progress: false
+
+jobs:
+  controller:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run controller tests
+        run: python -m unittest discover -s scripts -p 'test_thread_execution_controller.py'
+      - name: Evaluate lanes and wake actionable threads
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          LUMEN_WAKE_WEBHOOK_URL: ${{ secrets.LUMEN_WAKE_WEBHOOK_URL }}
+          LUMEN_WAKE_WEBHOOK_TOKEN: ${{ secrets.LUMEN_WAKE_WEBHOOK_TOKEN }}
+          LUMEN_STALE_MINUTES: '15'
+          LUMEN_SUPPRESS_MINUTES: '30'
+        run: |
+          DRY_RUN=""
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.dry_run }}" == "true" ]]; then
+            DRY_RUN="--dry-run"
+          fi
+          python scripts/thread_execution_controller.py $DRY_RUN
