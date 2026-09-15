@@ -22,6 +22,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(classes = {LumenApplication.class, SecurityBoundaryTest.TestApi.class})
@@ -31,12 +32,13 @@ class SecurityBoundaryTest {
     private MockMvc mockMvc;
 
     @Test
-    void apiBoundaryReturnsUnauthorizedForUnauthenticatedAndAllowsAuthenticatedRequests() throws Exception {
+    void apiBoundaryReturnsUnauthorizedForUnauthenticatedAndBootstrapsCsrfForAuthenticatedRequests() throws Exception {
         mockMvc.perform(get("/api/test"))
                 .andExpect(status().isUnauthorized());
 
         mockMvc.perform(get("/api/test").with(oidcLogin()))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(cookie().exists("XSRF-TOKEN"));
     }
 
     @Test
