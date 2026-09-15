@@ -23,7 +23,7 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: 'mvn --batch-mode spring-boot:run',
+      command: 'mvn --batch-mode test-compile spring-boot:run -Dspring-boot.run.useTestClasspath=true -Dspring-boot.run.profiles=e2e',
       cwd: '../backend',
       url: 'http://127.0.0.1:8080/actuator/health',
       timeout: 120_000,
