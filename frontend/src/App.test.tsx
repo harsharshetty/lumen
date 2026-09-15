@@ -58,6 +58,17 @@ describe('App', () => {
     expect(latestProps.selectedCurriculumIdsByLearner).toEqual({});
   });
 
+  it('shows the configured sign-in entry when the API reports unauthenticated', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(emptyResponse(401));
+
+    render(<App />);
+
+    expect(await screen.findByRole('heading', { name: 'Welcome to Lumen' })).toBeInTheDocument();
+    const signIn = screen.getByRole('link', { name: 'Continue with Google' });
+    expect(signIn).toHaveAttribute('href', '/oauth2/authorization/google');
+    expect(screen.queryByTestId('flow-state')).not.toBeInTheDocument();
+  });
+
   it.each([
     [403, 'forbidden:forbidden:forbidden'],
     [500, 'error:error:error'],
