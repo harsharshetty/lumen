@@ -21,6 +21,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfFilter;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -40,6 +42,7 @@ public class E2eSecurityConfiguration {
                 .securityMatcher("/api/**")
                 .authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated())
                 .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+                .addFilterAfter(new E2eCsrfCookieFilter(), CsrfFilter.class)
                 .addFilterBefore(authenticationFilter, AuthorizationFilter.class)
                 .build();
     }
@@ -47,6 +50,17 @@ public class E2eSecurityConfiguration {
     @Bean
     E2eHeaderAuthenticationFilter e2eHeaderAuthenticationFilter(AuthenticatedUserService authenticatedUserService) {
         return new E2eHeaderAuthenticationFilter(authenticatedUserService);
+    }
+
+    static final class E2eCsrfCookieFilter extends OncePerRequestFilter {
+        @Override
+        protected void doFilterInternal(HttpServletRequest request,
+                                        HttpServletResponse response,
+                                        FilterChain filterChain) throws ServletException, IOException {
+            CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
+            csrfToken.getToken();
+            filterChain.doFilter(request, response);
+        }
     }
 
     static final class E2eHeaderAuthenticationFilter extends OncePerRequestFilter {
