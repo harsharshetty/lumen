@@ -1,8 +1,16 @@
+FROM node:24-alpine AS frontend-build
+WORKDIR /frontend
+COPY frontend/package.json ./package.json
+RUN npm install --no-audit --no-fund
+COPY frontend ./
+RUN npm run build
+
 FROM maven:3.9.9-eclipse-temurin-21 AS build
 WORKDIR /workspace
 COPY backend/pom.xml ./pom.xml
 RUN mvn --batch-mode dependency:go-offline
 COPY backend/src ./src
+COPY --from=frontend-build /frontend/dist ./src/main/resources/static
 RUN mvn --batch-mode package -DskipTests
 
 FROM eclipse-temurin:21-jre
