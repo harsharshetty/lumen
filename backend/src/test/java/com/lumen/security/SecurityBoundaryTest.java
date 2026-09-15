@@ -2,6 +2,7 @@ package com.lumen.security;
 
 import com.lumen.LumenApplication;
 import com.lumen.domain.IdentityProvider;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.Test;
@@ -11,7 +12,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -22,6 +25,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -39,6 +43,21 @@ class SecurityBoundaryTest {
         mockMvc.perform(get("/api/test").with(oidcLogin()))
                 .andExpect(status().isOk())
                 .andExpect(cookie().exists("XSRF-TOKEN"));
+    }
+
+    @Test
+    void apiBoundaryAcceptsSpaCsrfCookieValueInXsrfHeader() throws Exception {
+        MvcResult bootstrap = mockMvc.perform(get("/api/test").with(oidcLogin()))
+                .andExpect(status().isOk())
+                .andReturn();
+        Cookie csrfCookie = bootstrap.getResponse().getCookie("XSRF-TOKEN");
+        assertThat(csrfCookie).isNotNull();
+
+        mockMvc.perform(post("/api/test")
+                        .with(oidcLogin())
+                        .cookie(csrfCookie)
+                        .header("X-XSRF-TOKEN", csrfCookie.getValue()))
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -78,7 +97,12 @@ class SecurityBoundaryTest {
     @RestController
     static class TestApi {
         @GetMapping("/api/test")
-        String test() {
+        String get() {
+            return "ok";
+        }
+
+        @PostMapping("/api/test")
+        String post() {
             return "ok";
         }
     }
