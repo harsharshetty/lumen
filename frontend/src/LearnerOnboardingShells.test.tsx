@@ -76,7 +76,7 @@ describe('LearnerLanding', () => {
     expect(screen.queryByText(/6\s*\/\s*10/)).not.toBeInTheDocument();
     expect(screen.queryByText("Today's focus")).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Add learner' }));
+    fireEvent.click(screen.getByRole('button', { name: /Add learner/ }));
     expect(onAddLearner).toHaveBeenCalledOnce();
 
     const openButtons = screen.getAllByRole('button', { name: 'Open' });
