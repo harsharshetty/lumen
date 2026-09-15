@@ -104,7 +104,8 @@ def request_json(url: str, token: str, method: str = "GET", payload: dict | None
     if payload is not None:
         request.add_header("Content-Type", "application/json")
     with urllib.request.urlopen(request, timeout=20) as response:
-        return json.loads(response.read().decode())
+        body = response.read().decode()
+        return json.loads(body) if body else {}
 
 
 def recently_woken(repo: str, candidate: Candidate, github_token: str, now: datetime, suppress_minutes: int) -> bool:
@@ -145,6 +146,15 @@ def invoke_webhook(url: str, token: str | None, payload: dict) -> None:
     with urllib.request.urlopen(request, timeout=20) as response:
         if response.status >= 300:
             raise RuntimeError(f"wake adapter returned HTTP {response.status}")
+
+
+def invoke_repository_dispatch(repo: str, github_token: str, payload: dict) -> None:
+    request_json(
+        f"https://api.github.com/repos/{repo}/dispatches",
+        github_token,
+        method="POST",
+        payload={"event_type": "lumen_lane_wake", "client_payload": payload},
+    )
 
 
 def add_wake_marker(repo: str, candidate: Candidate, github_token: str, now: datetime) -> None:
@@ -188,17 +198,14 @@ def run(args: argparse.Namespace) -> int:
         if args.dry_run:
             log("would_wake", **payload)
             continue
-        if not adapter_url:
-            log(
-                "adapter_unconfigured",
-                lane=candidate.lane,
-                issue=candidate.number,
-                reason="No supported authenticated thread wake endpoint configured; session scraping is intentionally disabled",
-            )
-            continue
-        invoke_webhook(adapter_url, adapter_token, payload)
+        if adapter_url:
+            invoke_webhook(adapter_url, adapter_token, payload)
+            adapter = "external_webhook"
+        else:
+            invoke_repository_dispatch(repo, github_token, payload)
+            adapter = "github_repository_dispatch"
         add_wake_marker(repo, candidate, github_token, now)
-        log("wake", **payload)
+        log("wake", adapter=adapter, **payload)
     return 0
 
 
