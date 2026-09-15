@@ -55,21 +55,26 @@ describe('LearnerLanding', () => {
     expect(screen.queryByText('Aarav')).not.toBeInTheDocument();
   });
 
-  it('shows the first-time empty state and starts learner creation', () => {
+  it('shows the frozen first-time parent empty state and starts learner creation', () => {
     const { onAddLearner } = renderLanding('ready');
 
     expect(screen.getByRole('heading', { name: 'Add your first learner' })).toBeInTheDocument();
     expect(screen.getByText('Create a learner profile to start choosing the curricula you want to follow.')).toBeInTheDocument();
+    expect(screen.getByText('Choose curricula')).toBeInTheDocument();
+    expect(screen.queryByText("Today's focus")).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Add learner' }));
     expect(onAddLearner).toHaveBeenCalledOnce();
   });
 
-  it('shows only the provided learners and supports add/open actions', () => {
+  it('shows only real learner profiles without fabricated progress and supports add/open actions', () => {
     const { onAddLearner, onOpenLearner } = renderLanding('ready', learners);
 
     expect(screen.getByRole('heading', { name: 'Learners' })).toBeInTheDocument();
     expect(screen.getByText('Aarav')).toBeInTheDocument();
     expect(screen.getByText('Mira')).toBeInTheDocument();
+    expect(screen.getAllByText('Learner profile')).toHaveLength(2);
+    expect(screen.queryByText(/6\s*\/\s*10/)).not.toBeInTheDocument();
+    expect(screen.queryByText("Today's focus")).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Add learner' }));
     expect(onAddLearner).toHaveBeenCalledOnce();
