@@ -26,8 +26,8 @@ class RepositoryIntegrationTest {
 
     @Test
     void repositoriesPersistAndQueryV0Relationships() {
-        Subject subject = subjectRepository.save(new Subject("Mathematics"));
-        Curriculum curriculum = curriculumRepository.save(new Curriculum("CBSE Grade 3 Mathematics", "3", subject));
+        Subject subject = subjectRepository.save(new Subject("Repository Test Mathematics"));
+        Curriculum curriculum = curriculumRepository.save(new Curriculum("Repository Test Curriculum", "3", subject));
         LearningConcept concept = learningConceptRepository.save(new LearningConcept("Division"));
         Learner learner = learnerRepository.save(new Learner("Asha"));
 
