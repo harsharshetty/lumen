@@ -1,9 +1,11 @@
+import { Button, Container, Stack, Typography } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
 import ParentOnboardingFlow from './ParentOnboardingFlow';
 import type { CurriculumChoice } from './LearnerCurriculumSelection';
 import type { LearnerSummary } from './learnerTypes';
 
-type ViewState = 'loading' | 'error' | 'forbidden' | 'ready';
+type FlowState = 'loading' | 'error' | 'forbidden' | 'ready';
+type LearnerViewState = FlowState | 'unauthenticated';
 
 type CurriculumResponse = {
   id: string;
@@ -41,9 +43,9 @@ const toChoice = (curriculum: CurriculumResponse): CurriculumChoice => ({
 });
 
 export default function App() {
-  const [learnerState, setLearnerState] = useState<ViewState>('loading');
-  const [curriculumState, setCurriculumState] = useState<ViewState>('loading');
-  const [profileState, setProfileState] = useState<ViewState>('ready');
+  const [learnerState, setLearnerState] = useState<LearnerViewState>('loading');
+  const [curriculumState, setCurriculumState] = useState<FlowState>('loading');
+  const [profileState, setProfileState] = useState<FlowState>('ready');
   const [learners, setLearners] = useState<LearnerSummary[]>([]);
   const [curricula, setCurricula] = useState<CurriculumChoice[]>([]);
   const [selectedByLearner, setSelectedByLearner] = useState<Record<string, string[]>>({});
@@ -68,7 +70,13 @@ export default function App() {
       setProfileState('ready');
     } catch (error) {
       const status = (error as { status?: number }).status;
-      const nextState: ViewState = status === 403 ? 'forbidden' : 'error';
+      if (status === 401) {
+        setLearnerState('unauthenticated');
+        setCurriculumState('error');
+        setProfileState('error');
+        return;
+      }
+      const nextState: FlowState = status === 403 ? 'forbidden' : 'error';
       setLearnerState(nextState);
       setCurriculumState(nextState);
       setProfileState(nextState);
@@ -100,6 +108,22 @@ export default function App() {
     ]);
     setSelectedByLearner((selections) => ({ ...selections, [learnerId]: selectedIds }));
   };
+
+  if (learnerState === 'unauthenticated') {
+    return (
+      <Container maxWidth="sm" sx={{ py: 10 }}>
+        <Stack spacing={3} alignItems="flex-start">
+          <Typography variant="h3" component="h1">Welcome to Lumen</Typography>
+          <Typography color="text.secondary">
+            Sign in to create or continue a learner profile and choose curricula.
+          </Typography>
+          <Button variant="contained" href="/oauth2/authorization/google">
+            Continue with Google
+          </Button>
+        </Stack>
+      </Container>
+    );
+  }
 
   return (
     <ParentOnboardingFlow

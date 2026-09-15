@@ -65,7 +65,7 @@ class LearnerAuthorizationBoundaryTest {
     @Test
     void unauthenticatedCallerCannotCrossApiBoundary() throws Exception {
         mockMvc.perform(get("/api/authz-test"))
-                .andExpect(status().is3xxRedirection());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test

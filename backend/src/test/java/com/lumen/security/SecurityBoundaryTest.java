@@ -31,9 +31,9 @@ class SecurityBoundaryTest {
     private MockMvc mockMvc;
 
     @Test
-    void apiBoundaryRejectsUnauthenticatedAndAllowsAuthenticatedRequests() throws Exception {
+    void apiBoundaryReturnsUnauthorizedForUnauthenticatedAndAllowsAuthenticatedRequests() throws Exception {
         mockMvc.perform(get("/api/test"))
-                .andExpect(status().is3xxRedirection());
+                .andExpect(status().isUnauthorized());
 
         mockMvc.perform(get("/api/test").with(oidcLogin()))
                 .andExpect(status().isOk());
