@@ -58,14 +58,18 @@ describe('App', () => {
     expect(latestProps.selectedCurriculumIdsByLearner).toEqual({});
   });
 
-  it('shows the configured sign-in entry when the API reports unauthenticated', async () => {
+  it('shows the frozen branded sign-in entry when the API reports unauthenticated', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(emptyResponse(401));
 
     render(<App />);
 
-    expect(await screen.findByRole('heading', { name: 'Welcome to Lumen' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Welcome back' })).toBeInTheDocument();
     const signIn = screen.getByRole('link', { name: 'Continue with Google' });
     expect(signIn).toHaveAttribute('href', '/oauth2/authorization/google');
+    expect(screen.getByText('Personalised practice')).toBeInTheDocument();
+    expect(screen.getByText('Real progress')).toBeInTheDocument();
+    expect(screen.getByText('Curriculum choices')).toBeInTheDocument();
+    expect(screen.queryByText('or', { exact: true })).not.toBeInTheDocument();
     expect(screen.queryByTestId('flow-state')).not.toBeInTheDocument();
   });
 
