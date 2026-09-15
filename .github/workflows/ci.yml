@@ -57,8 +57,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Test thread execution controller
-        run: python -m unittest discover -s scripts -p 'test_thread_execution_controller.py'
+      - name: Test thread execution controller and lane worker
+        run: python -m unittest discover -s scripts -p 'test_*worker.py' && python -m unittest discover -s scripts -p 'test_thread_execution_controller.py'
 
   container:
     runs-on: ubuntu-latest
