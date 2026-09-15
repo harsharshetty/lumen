@@ -1,0 +1,33 @@
+name: Lane execution worker
+
+on:
+  repository_dispatch:
+    types: [lumen_lane_wake]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: lumen-lane-${{ github.event.client_payload.lane }}
+  cancel-in-progress: false
+
+jobs:
+  execute:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate worker code
+        run: python -m unittest discover -s scripts -p 'test_lane_execution_worker.py'
+      - name: Execute lane wake
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          LUMEN_WORKER_MODEL: gpt-5.6-terra
+          LUMEN_WAKE_PAYLOAD: ${{ toJson(github.event.client_payload) }}
+        run: python scripts/lane_execution_worker.py
