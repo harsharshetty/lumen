@@ -1,6 +1,12 @@
 package com.lumen.e2e;
 
 import com.lumen.domain.IdentityProvider;
+import com.lumen.domain.Learner;
+import com.lumen.domain.LearnerAccessLevel;
+import com.lumen.domain.User;
+import com.lumen.domain.UserLearnerAccess;
+import com.lumen.repository.LearnerRepository;
+import com.lumen.repository.UserLearnerAccessRepository;
 import com.lumen.security.AuthenticatedUserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -30,6 +36,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Configuration
 @Profile("e2e")
@@ -38,7 +45,8 @@ public class E2eSecurityConfiguration {
     @Bean
     @Order(0)
     SecurityFilterChain e2eApiSecurityFilterChain(HttpSecurity http,
-                                                   E2eHeaderAuthenticationFilter authenticationFilter) throws Exception {
+                                                   E2eHeaderAuthenticationFilter authenticationFilter,
+                                                   E2eAccessFixtureFilter accessFixtureFilter) throws Exception {
         return http
                 .securityMatcher("/api/**")
                 .authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated())
@@ -47,12 +55,20 @@ public class E2eSecurityConfiguration {
                         .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
                 .addFilterAfter(new E2eCsrfCookieFilter(), CsrfFilter.class)
                 .addFilterBefore(authenticationFilter, AuthorizationFilter.class)
+                .addFilterAfter(accessFixtureFilter, E2eHeaderAuthenticationFilter.class)
                 .build();
     }
 
     @Bean
     E2eHeaderAuthenticationFilter e2eHeaderAuthenticationFilter(AuthenticatedUserService authenticatedUserService) {
         return new E2eHeaderAuthenticationFilter(authenticatedUserService);
+    }
+
+    @Bean
+    E2eAccessFixtureFilter e2eAccessFixtureFilter(AuthenticatedUserService authenticatedUserService,
+                                                  LearnerRepository learnerRepository,
+                                                  UserLearnerAccessRepository accessRepository) {
+        return new E2eAccessFixtureFilter(authenticatedUserService, learnerRepository, accessRepository);
     }
 
     static final class E2eCsrfCookieFilter extends OncePerRequestFilter {
@@ -106,6 +122,40 @@ public class E2eSecurityConfiguration {
                 SecurityContextHolder.setContext(context);
             }
 
+            filterChain.doFilter(request, response);
+        }
+    }
+
+    static final class E2eAccessFixtureFilter extends OncePerRequestFilter {
+        private final AuthenticatedUserService authenticatedUserService;
+        private final LearnerRepository learnerRepository;
+        private final UserLearnerAccessRepository accessRepository;
+
+        private E2eAccessFixtureFilter(AuthenticatedUserService authenticatedUserService,
+                                       LearnerRepository learnerRepository,
+                                       UserLearnerAccessRepository accessRepository) {
+            this.authenticatedUserService = authenticatedUserService;
+            this.learnerRepository = learnerRepository;
+            this.accessRepository = accessRepository;
+        }
+
+        @Override
+        protected void doFilterInternal(HttpServletRequest request,
+                                        HttpServletResponse response,
+                                        FilterChain filterChain) throws ServletException, IOException {
+            String learnerId = request.getHeader("X-E2E-Learner-Id");
+            String accessLevel = request.getHeader("X-E2E-Access-Level");
+            if (learnerId != null && accessLevel != null
+                    && SecurityContextHolder.getContext().getAuthentication() instanceof OAuth2AuthenticationToken authentication) {
+                User user = authenticatedUserService.currentUser(authentication);
+                Learner learner = learnerRepository.findById(UUID.fromString(learnerId)).orElseThrow();
+                synchronized (accessRepository) {
+                    accessRepository.findByUserAndLearner(user, learner)
+                            .ifPresentOrElse(
+                                    access -> access.changeAccessLevel(LearnerAccessLevel.valueOf(accessLevel)),
+                                    () -> accessRepository.save(new UserLearnerAccess(user, learner, LearnerAccessLevel.valueOf(accessLevel))));
+                }
+            }
             filterChain.doFilter(request, response);
         }
     }
