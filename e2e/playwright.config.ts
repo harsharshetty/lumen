@@ -27,7 +27,9 @@ export default defineConfig({
       cwd: '../backend',
       url: 'http://127.0.0.1:8080/actuator/health',
       timeout: 120_000,
-      reuseExistingServer: !process.env.CI
+      reuseExistingServer: !process.env.CI,
+      stdout: 'pipe',
+      stderr: 'pipe'
     },
     {
       command: 'npm run dev -- --host 127.0.0.1 --port 5173',
