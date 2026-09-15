@@ -5,7 +5,8 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/actuator': 'http://127.0.0.1:8080'
+      '/actuator': 'http://127.0.0.1:8080',
+      '/api': 'http://127.0.0.1:8080'
     }
   },
   test: {
