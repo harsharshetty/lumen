@@ -23,13 +23,13 @@ class LearnerApiExposureIntegrationTest {
     @Test
     void learnerListRequiresAuthentication() throws Exception {
         mockMvc.perform(get("/api/learners"))
-                .andExpect(status().is3xxRedirection());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
     void learnerReadRequiresAuthentication() throws Exception {
         mockMvc.perform(get("/api/learners/{id}", UUID.randomUUID()))
-                .andExpect(status().is3xxRedirection());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
