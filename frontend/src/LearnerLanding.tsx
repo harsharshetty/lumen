@@ -4,7 +4,6 @@ import {
   Box,
   Button,
   CircularProgress,
-  Container,
   Paper,
   Stack,
   Typography,
@@ -20,58 +19,96 @@ type Props = {
   onOpenLearner: (learner: LearnerSummary) => void;
 };
 
+const visuallyHidden = {
+  position: 'absolute',
+  width: 1,
+  height: 1,
+  p: 0,
+  m: -1,
+  overflow: 'hidden',
+  clip: 'rect(0 0 0 0)',
+  whiteSpace: 'nowrap',
+  border: 0,
+};
+
+function LumenLogo() {
+  return (
+    <Stack direction="row" spacing={1.1} alignItems="center">
+      <Typography aria-hidden="true" sx={{ color: '#1677ff', fontSize: 34, lineHeight: 1 }}>✦</Typography>
+      <Typography sx={{ color: '#0b1f5e', fontSize: 28, fontWeight: 800, letterSpacing: '-0.03em' }}>Lumen</Typography>
+    </Stack>
+  );
+}
+
+function NavItem({ icon, label, active = false }: { icon: string; label: string; active?: boolean }) {
+  return (
+    <Stack
+      direction="row"
+      spacing={1.7}
+      alignItems="center"
+      aria-disabled={!active}
+      sx={{
+        minHeight: 58,
+        px: 2.2,
+        borderRadius: 2.5,
+        color: active ? '#1677ff' : '#1f376d',
+        bgcolor: active ? '#e8f2ff' : 'transparent',
+        fontWeight: active ? 800 : 600,
+      }}
+    >
+      <Typography aria-hidden="true" sx={{ fontSize: 23, width: 28, textAlign: 'center' }}>{icon}</Typography>
+      <Typography sx={{ fontSize: '1rem', fontWeight: 'inherit' }}>{label}</Typography>
+    </Stack>
+  );
+}
+
 function ParentShell({ children }: { children: ReactNode }) {
   return (
-    <Box component="main" sx={{ minHeight: '100vh', py: { xs: 2, md: 4 }, px: { xs: 2, md: 4 } }}>
-      <Box
-        sx={{
-          width: 'min(1260px, 100%)',
-          minHeight: { md: 720 },
-          mx: 'auto',
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr', md: '220px minmax(0, 1fr)' },
-          overflow: 'hidden',
-          borderRadius: { xs: 3, md: 5 },
-          bgcolor: 'background.paper',
-          border: '1px solid rgba(112, 140, 196, 0.16)',
-          boxShadow: '0 26px 70px rgba(34, 67, 132, 0.14)',
-        }}
-      >
+    <Box component="main" sx={{ minHeight: '100vh', bgcolor: '#f7faff', color: '#0b1f3a' }}>
+      <Box sx={{ minHeight: '100vh', display: 'grid', gridTemplateColumns: { xs: '1fr', md: '264px minmax(0, 1fr)' } }}>
         <Box
           component="aside"
           sx={{
-            borderRight: { md: '1px solid #e9eef8' },
-            borderBottom: { xs: '1px solid #e9eef8', md: 'none' },
-            px: 3,
-            py: 3.5,
-            bgcolor: '#fbfcff',
-            display: 'flex',
-            flexDirection: { xs: 'row', md: 'column' },
-            alignItems: { xs: 'center', md: 'stretch' },
-            justifyContent: { xs: 'space-between', md: 'flex-start' },
-            gap: 3,
+            display: { xs: 'none', md: 'flex' },
+            flexDirection: 'column',
+            minHeight: '100vh',
+            bgcolor: '#fff',
+            borderRight: '1px solid #e8eef8',
+            px: 2.2,
+            py: 2.5,
           }}
         >
-          <Stack direction="row" spacing={1} alignItems="center">
-            <Typography aria-hidden="true" color="primary.main" sx={{ fontSize: 30, lineHeight: 1 }}>✦</Typography>
-            <Typography variant="h5" component="div" color="primary.dark" fontWeight={800}>Lumen</Typography>
+          <Box sx={{ px: 1.5, pt: 0.3, pb: 4.8 }}><LumenLogo /></Box>
+          <Stack spacing={1.1}>
+            <NavItem icon="⌂" label="Home" active />
+            <NavItem icon="▤" label="Learn" />
+            <NavItem icon="▥" label="Progress" />
+            <NavItem icon="▧" label="Resources" />
+            <NavItem icon="⚙" label="Settings" />
           </Stack>
-          <Paper
+          <Box
             sx={{
-              mt: { md: 4 },
-              px: 2,
-              py: 1.5,
-              borderRadius: 2.5,
-              bgcolor: '#eaf2ff',
-              color: 'primary.dark',
+              mt: 'auto',
+              mx: 0.8,
+              mb: 1,
+              minHeight: 245,
+              borderRadius: 3,
+              p: 2.6,
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'flex-end',
+              color: '#0b1f5e',
+              background: 'linear-gradient(180deg, #eef5ff 0%, #e9f2ff 64%, #dbe9ff 100%)',
+              overflow: 'hidden',
+              position: 'relative',
             }}
           >
-            <Typography fontWeight={800}>Home</Typography>
-          </Paper>
-          <Box sx={{ display: { xs: 'none', md: 'block' }, mt: 'auto', p: 2, borderRadius: 3, bgcolor: '#f1f5ff' }}>
-            <Typography variant="body2" color="text.secondary" lineHeight={1.7}>
-              Small steps today can open bigger possibilities tomorrow.
+            <Box sx={{ position: 'absolute', left: -35, right: -35, top: 56, height: 90, bgcolor: '#bdd5f6', transform: 'rotate(-8deg)', borderRadius: '50%' }} />
+            <Box sx={{ position: 'absolute', left: 50, right: -50, top: 82, height: 90, bgcolor: '#8fb9ec', transform: 'rotate(10deg)', borderRadius: '50%' }} />
+            <Typography sx={{ position: 'relative', fontWeight: 800, fontSize: '1.08rem', lineHeight: 1.45, maxWidth: 170 }}>
+              Learning today for bigger tomorrows
             </Typography>
+            <Box sx={{ position: 'relative', mt: 1.5, width: 56, height: 3, borderRadius: 999, bgcolor: '#1677ff', transform: 'rotate(-7deg)' }} />
           </Box>
         </Box>
 
@@ -79,17 +116,28 @@ function ParentShell({ children }: { children: ReactNode }) {
           <Box
             component="header"
             sx={{
-              minHeight: 76,
-              px: { xs: 2.5, sm: 4 },
+              height: 76,
+              px: { xs: 2.5, sm: 4, lg: 5 },
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'flex-end',
-              borderBottom: '1px solid #edf1f8',
+              justifyContent: 'space-between',
+              bgcolor: '#fff',
+              borderBottom: '1px solid #e8eef8',
             }}
           >
-            <Stack direction="row" spacing={1.2} alignItems="center">
-              <Avatar sx={{ width: 38, height: 38, bgcolor: '#6757d9', fontSize: 16 }}>P</Avatar>
-              <Typography fontWeight={700} color="primary.dark">Parent</Typography>
+            <Stack direction="row" spacing={{ xs: 2, md: 5 }} alignItems="center" sx={{ display: { xs: 'none', sm: 'flex' } }}>
+              {['Home', 'Learn', 'Progress', 'Resources'].map((item) => (
+                <Typography key={item} sx={{ color: item === 'Home' ? '#1677ff' : '#1f376d', fontWeight: item === 'Home' ? 800 : 600, fontSize: '0.96rem' }}>
+                  {item}
+                </Typography>
+              ))}
+            </Stack>
+            <Box sx={{ display: { xs: 'block', sm: 'none' } }}><LumenLogo /></Box>
+            <Stack direction="row" spacing={1.4} alignItems="center">
+              <Typography aria-hidden="true" sx={{ fontSize: 22, color: '#48679c' }}>♢</Typography>
+              <Avatar sx={{ width: 40, height: 40, bgcolor: '#5d4ddb', fontSize: 16 }}>P</Avatar>
+              <Typography sx={{ color: '#0b1f5e', fontWeight: 700, display: { xs: 'none', sm: 'block' } }}>Parent</Typography>
+              <Typography aria-hidden="true" sx={{ color: '#35598d' }}>⌄</Typography>
             </Stack>
           </Box>
           {children}
@@ -99,16 +147,61 @@ function ParentShell({ children }: { children: ReactNode }) {
   );
 }
 
-function LearningLandscape() {
+function MotivationCard() {
   return (
-    <Box sx={{ position: 'relative', height: 210, borderRadius: 3, overflow: 'hidden', bgcolor: '#edf5ff' }}>
-      <Box sx={{ position: 'absolute', width: 74, height: 74, borderRadius: '50%', bgcolor: '#ffe49a', right: 34, top: 28 }} />
-      <Box sx={{ position: 'absolute', width: 260, height: 180, bgcolor: '#c9dcfa', transform: 'rotate(45deg)', right: -70, bottom: -125, borderRadius: 4 }} />
-      <Box sx={{ position: 'absolute', width: 230, height: 170, bgcolor: '#a8c7f2', transform: 'rotate(45deg)', right: 65, bottom: -130, borderRadius: 4 }} />
-      <Stack sx={{ position: 'absolute', left: 28, top: 28, maxWidth: 220 }} spacing={1}>
-        <Typography variant="h5" color="primary.dark" fontWeight={800}>Support their learning journey.</Typography>
-        <Typography variant="body2" color="text.secondary">Open a learner profile to review curricula and continue from where you left off.</Typography>
+    <Box
+      sx={{
+        minHeight: 300,
+        borderRadius: 3,
+        p: 3.5,
+        position: 'relative',
+        overflow: 'hidden',
+        background: 'linear-gradient(145deg, #edf5ff 0%, #e8f2ff 62%, #dceaff 100%)',
+      }}
+    >
+      <Typography sx={{ position: 'relative', zIndex: 1, color: '#0b1f5e', fontWeight: 800, fontSize: '1.45rem', lineHeight: 1.25, maxWidth: 250 }}>
+        Consistent practice builds real progress.
+      </Typography>
+      <Typography sx={{ position: 'relative', zIndex: 1, mt: 2, color: '#54709e', lineHeight: 1.55, maxWidth: 235 }}>
+        Support their learning with the right practice and resources.
+      </Typography>
+      <Box sx={{ position: 'absolute', width: 70, height: 70, borderRadius: '50%', bgcolor: '#ffe59b', right: 36, bottom: 84 }} />
+      <Box sx={{ position: 'absolute', width: 230, height: 150, bgcolor: '#bad7f7', transform: 'rotate(36deg)', right: -65, bottom: -92, borderRadius: 5 }} />
+      <Box sx={{ position: 'absolute', width: 190, height: 130, bgcolor: '#82b8ee', transform: 'rotate(40deg)', right: 55, bottom: -90, borderRadius: 5 }} />
+      <Stack spacing={0.35} sx={{ position: 'absolute', right: 23, bottom: 18, width: 150 }}>
+        {['#2984f3', '#35a66d', '#f6b63f'].map((color, index) => (
+          <Box key={color} sx={{ height: 22, borderRadius: 1, bgcolor: color, transform: `translateX(${index * -8}px)` }} />
+        ))}
       </Stack>
+    </Box>
+  );
+}
+
+function EmptyState({ onAddLearner }: { onAddLearner: () => void }) {
+  return (
+    <Box sx={{ p: { xs: 3, sm: 5, lg: 6 } }}>
+      <Box sx={{ minHeight: 520, display: 'grid', placeItems: 'center' }}>
+        <Stack spacing={2.3} alignItems="center" textAlign="center" sx={{ maxWidth: 640 }}>
+          <Typography sx={{ color: '#1677ff', fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', fontSize: '0.82rem' }}>Welcome to Lumen</Typography>
+          <Typography variant="h2" component="h1" sx={{ color: '#0b1f5e', fontSize: { xs: '2.4rem', md: '3.35rem' } }}>Add your first learner</Typography>
+          <Typography color="text.secondary" sx={{ fontSize: '1.08rem', lineHeight: 1.75 }}>
+            Create a learner profile to start choosing the curricula you want to follow.
+          </Typography>
+          <Button variant="contained" onClick={onAddLearner} sx={{ minWidth: 160, minHeight: 50, mt: 1 }}>Add learner</Button>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2.2} sx={{ pt: 3 }}>
+            {[
+              ['📖', 'Choose curricula'],
+              ['◎', 'Learner profiles'],
+              ['↗', 'Continue anytime'],
+            ].map(([icon, title]) => (
+              <Paper key={title} variant="outlined" sx={{ px: 2.4, py: 2, borderRadius: 3, borderColor: '#e2e9f5', minWidth: 160 }}>
+                <Typography aria-hidden="true" sx={{ fontSize: 25 }}>{icon}</Typography>
+                <Typography sx={{ mt: 0.8, fontWeight: 800, color: '#0b1f5e' }}>{title}</Typography>
+              </Paper>
+            ))}
+          </Stack>
+        </Stack>
+      </Box>
     </Box>
   );
 }
@@ -123,12 +216,10 @@ export default function LearnerLanding({
   if (state === 'loading') {
     return (
       <ParentShell>
-        <Container maxWidth="md" sx={{ py: 8 }}>
-          <Stack spacing={2} alignItems="flex-start" aria-live="polite">
-            <CircularProgress aria-label="Loading learners" />
-            <Typography>Loading your learners…</Typography>
-          </Stack>
-        </Container>
+        <Stack spacing={2} alignItems="flex-start" aria-live="polite" sx={{ p: { xs: 4, md: 8 } }}>
+          <CircularProgress aria-label="Loading learners" />
+          <Typography>Loading your learners…</Typography>
+        </Stack>
       </ParentShell>
     );
   }
@@ -136,14 +227,11 @@ export default function LearnerLanding({
   if (state === 'error') {
     return (
       <ParentShell>
-        <Container maxWidth="md" sx={{ py: 8 }}>
-          <Alert
-            severity="error"
-            action={<Button color="inherit" onClick={onRetry}>Try again</Button>}
-          >
+        <Box sx={{ p: { xs: 4, md: 8 } }}>
+          <Alert severity="error" action={<Button color="inherit" onClick={onRetry}>Try again</Button>}>
             We couldn't load your learners. Try again.
           </Alert>
-        </Container>
+        </Box>
       </ParentShell>
     );
   }
@@ -151,93 +239,133 @@ export default function LearnerLanding({
   if (state === 'forbidden') {
     return (
       <ParentShell>
-        <Container maxWidth="md" sx={{ py: 8 }}>
+        <Box sx={{ p: { xs: 4, md: 8 } }}>
           <Alert severity="warning">You don't have access to this learner.</Alert>
-        </Container>
-      </ParentShell>
-    );
-  }
-
-  if (learners.length === 0) {
-    return (
-      <ParentShell>
-        <Box sx={{ p: { xs: 3, sm: 5, md: 6 } }}>
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1.1fr 0.9fr' }, gap: 4, alignItems: 'center' }}>
-            <Stack spacing={2.5} alignItems="flex-start">
-              <Typography variant="overline" color="primary.main" fontWeight={800} letterSpacing="0.12em">Welcome to Lumen</Typography>
-              <Typography variant="h2" component="h1" sx={{ fontSize: { xs: '2.35rem', md: '3.4rem' } }}>Add your first learner</Typography>
-              <Typography color="text.secondary" sx={{ maxWidth: 580, fontSize: '1.08rem', lineHeight: 1.75 }}>
-                Create a learner profile to start choosing the curricula you want to follow.
-              </Typography>
-              <Button variant="contained" onClick={onAddLearner} sx={{ mt: 1, minWidth: 150 }}>
-                Add learner
-              </Button>
-            </Stack>
-            <LearningLandscape />
-          </Box>
-
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' }, gap: 2, mt: 5 }}>
-            {[
-              ['▣', 'Choose curricula', 'Select the curricula this learner should follow.'],
-              ['◎', 'Learner profiles', 'Keep each learner’s choices and journey separate.'],
-              ['↗', 'Continue anytime', 'Return to a learner profile whenever you need to.'],
-            ].map(([icon, title, copy]) => (
-              <Paper key={title} variant="outlined" sx={{ p: 2.5, borderColor: '#e2e9f5', borderRadius: 3 }}>
-                <Typography aria-hidden="true" color="primary.main" sx={{ fontSize: 24 }}>{icon}</Typography>
-                <Typography fontWeight={800} color="primary.dark" sx={{ mt: 1 }}>{title}</Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.7, lineHeight: 1.6 }}>{copy}</Typography>
-              </Paper>
-            ))}
-          </Box>
         </Box>
       </ParentShell>
     );
   }
 
+  if (learners.length === 0) {
+    return <ParentShell><EmptyState onAddLearner={onAddLearner} /></ParentShell>;
+  }
+
   return (
     <ParentShell>
-      <Box sx={{ p: { xs: 3, sm: 5, md: 6 } }}>
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1fr) 340px' }, gap: 4 }}>
-          <Box>
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="space-between" alignItems={{ xs: 'stretch', sm: 'center' }}>
+      <Box sx={{ px: { xs: 3, sm: 5, lg: 5.5 }, py: { xs: 4, lg: 4.5 } }}>
+        <Typography component="h2" sx={visuallyHidden}>Learners</Typography>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', xl: 'minmax(0, 1fr) 360px' }, gap: 3.5, alignItems: 'start' }}>
+          <Box sx={{ minWidth: 0 }}>
+            <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'stretch', sm: 'flex-start' }} spacing={2}>
               <Box>
-                <Typography variant="overline" color="primary.main" fontWeight={800} letterSpacing="0.12em">Parent home</Typography>
-                <Typography variant="h2" component="h1" sx={{ mt: 0.5 }}>Learners</Typography>
-                <Typography color="text.secondary" sx={{ mt: 0.7 }}>Open a learner profile or add another learner.</Typography>
+                <Typography component="h1" sx={{ color: '#0b1f5e', fontWeight: 800, fontSize: { xs: '2.2rem', lg: '2.7rem' }, letterSpacing: '-0.035em', lineHeight: 1.08 }}>
+                  Good morning!
+                </Typography>
+                <Typography sx={{ mt: 1, color: '#62719a', fontSize: { xs: '1rem', lg: '1.12rem' } }}>Here’s how your learners are doing.</Typography>
               </Box>
-              <Button variant="contained" onClick={onAddLearner}>Add learner</Button>
+              <Button variant="contained" onClick={onAddLearner} sx={{ minHeight: 52, px: 3, fontSize: '1rem', whiteSpace: 'nowrap' }}>
+                ＋ Add learner
+              </Button>
             </Stack>
 
-            <Stack spacing={2} sx={{ mt: 4 }}>
+            <Stack spacing={2.1} sx={{ mt: 4 }}>
               {learners.map((learner, index) => (
                 <Paper
                   key={learner.id}
                   variant="outlined"
                   sx={{
-                    p: 2.2,
-                    display: 'flex',
+                    minHeight: 124,
+                    px: { xs: 2.2, sm: 3 },
+                    py: 2.2,
+                    display: 'grid',
+                    gridTemplateColumns: { xs: 'auto minmax(0,1fr)', sm: 'auto minmax(0,1fr) minmax(180px,0.72fr) auto' },
                     alignItems: 'center',
-                    gap: 2,
+                    gap: { xs: 1.6, sm: 2.3 },
                     borderRadius: 3,
                     borderColor: '#e0e7f3',
-                    transition: 'transform 120ms ease, box-shadow 120ms ease',
-                    '&:hover': { transform: 'translateY(-1px)', boxShadow: '0 12px 28px rgba(34, 67, 132, 0.09)' },
+                    bgcolor: '#fff',
+                    boxShadow: '0 8px 24px rgba(45, 75, 132, 0.055)',
                   }}
                 >
-                  <Avatar sx={{ width: 52, height: 52, bgcolor: index % 2 === 0 ? '#f6b9cc' : '#b8d9f4', color: 'primary.dark', fontWeight: 800 }}>
+                  <Avatar sx={{ width: 68, height: 68, bgcolor: index % 2 === 0 ? '#ffd2df' : '#cfe7fb', color: '#0b1f5e', fontWeight: 800, fontSize: 24 }}>
                     {learner.displayName.slice(0, 1).toUpperCase()}
                   </Avatar>
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Typography variant="h6" component="h2" color="primary.dark" fontWeight={800}>{learner.displayName}</Typography>
-                    <Typography variant="body2" color="text.secondary">Learner profile</Typography>
+                  <Box sx={{ minWidth: 0 }}>
+                    <Typography sx={{ color: '#0b1f5e', fontWeight: 800, fontSize: '1.25rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {learner.displayName}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>Learner profile</Typography>
                   </Box>
-                  <Button onClick={() => onOpenLearner(learner)} variant="text">Open</Button>
+                  <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
+                    <Typography sx={{ color: '#62719a', fontSize: '0.82rem' }}>Continue learning</Typography>
+                    <Typography sx={{ mt: 0.45, color: '#193b7a', fontWeight: 700 }}>Open curricula and profile</Typography>
+                  </Box>
+                  <Button onClick={() => onOpenLearner(learner)} variant="text" sx={{ minWidth: 48, width: 48, height: 48, p: 0, borderRadius: '50%', fontSize: 28 }} aria-label="Open">
+                    ›
+                  </Button>
                 </Paper>
               ))}
             </Stack>
           </Box>
 
-          <LearningLandscape />
+          <Box sx={{ display: { xs: 'none', xl: 'block' } }}><MotivationCard /></Box>
+        </Box>
+
+        <Box sx={{ mt: 4.5 }}>
+          <Typography sx={{ color: '#0b1f5e', fontSize: '1.45rem', fontWeight: 800 }}>What would you like to do next?</Typography>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2.2, mt: 2.2 }}>
+            {[
+              ['📖', 'Choose curricula', 'Open a learner to review curriculum choices.'],
+              ['▥', 'Learner profiles', 'Keep each learner’s journey separate.'],
+              ['＋', 'Add learner', 'Create another learner profile.'],
+            ].map(([icon, title, copy], index) => (
+              <Paper
+                key={title}
+                variant="outlined"
+                onClick={index === 2 ? onAddLearner : undefined}
+                sx={{
+                  minHeight: 126,
+                  p: 2.4,
+                  display: 'grid',
+                  gridTemplateColumns: '64px minmax(0,1fr)',
+                  gap: 1.6,
+                  alignItems: 'center',
+                  borderRadius: 3,
+                  borderColor: '#e2e9f5',
+                  bgcolor: '#fff',
+                  cursor: index === 2 ? 'pointer' : 'default',
+                  boxShadow: '0 8px 22px rgba(45,75,132,.045)',
+                }}
+              >
+                <Box sx={{ width: 60, height: 60, borderRadius: '50%', display: 'grid', placeItems: 'center', bgcolor: index === 0 ? '#ffe8f0' : index === 1 ? '#e7f7ee' : '#efeaff', fontSize: 27 }}>{icon}</Box>
+                <Box>
+                  <Typography sx={{ color: '#0b1f5e', fontWeight: 800, fontSize: '1.03rem' }}>{title}</Typography>
+                  <Typography sx={{ mt: 0.5, color: '#62719a', fontSize: '0.9rem', lineHeight: 1.45 }}>{copy}</Typography>
+                </Box>
+              </Paper>
+            ))}
+          </Box>
+        </Box>
+
+        <Box
+          sx={{
+            mt: 4.5,
+            minHeight: 185,
+            borderRadius: 3,
+            px: { xs: 3, md: 6 },
+            py: 4,
+            display: 'flex',
+            alignItems: 'center',
+            position: 'relative',
+            overflow: 'hidden',
+            background: 'linear-gradient(100deg, #edf5ff 0%, #eef6ff 55%, #deebfb 100%)',
+          }}
+        >
+          <Box sx={{ position: 'absolute', width: 390, height: 260, bgcolor: '#b7d4f6', transform: 'rotate(41deg)', right: -110, bottom: -205, borderRadius: 6 }} />
+          <Box sx={{ position: 'absolute', width: 300, height: 220, bgcolor: '#90bced', transform: 'rotate(42deg)', right: 130, bottom: -190, borderRadius: 6 }} />
+          <Typography sx={{ position: 'relative', color: '#0b1f5e', fontWeight: 800, fontSize: { xs: '1.35rem', md: '1.65rem' }, lineHeight: 1.35, maxWidth: 560 }}>
+            Every step they take today<br />opens up new possibilities tomorrow.
+          </Typography>
         </Box>
       </Box>
     </ParentShell>

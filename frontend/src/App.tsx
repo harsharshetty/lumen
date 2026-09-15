@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import ParentOnboardingFlow from './ParentOnboardingFlow';
 import type { CurriculumChoice } from './LearnerCurriculumSelection';
 import type { LearnerSummary } from './learnerTypes';
+import signinLeftReference from './assets/signin-left-reference.jpg';
 
 type FlowState = 'loading' | 'error' | 'forbidden' | 'ready';
 type LearnerViewState = FlowState | 'unauthenticated';
@@ -50,10 +51,10 @@ function LumenMark() {
       sx={{
         display: 'inline-grid',
         placeItems: 'center',
-        width: 36,
-        height: 36,
-        color: 'primary.main',
-        fontSize: 34,
+        width: 42,
+        height: 42,
+        color: '#1b78ff',
+        fontSize: 38,
         lineHeight: 1,
       }}
     >
@@ -62,118 +63,117 @@ function LumenMark() {
   );
 }
 
-function DawnIllustration() {
+function GoogleMark() {
   return (
     <Box
-      component="svg"
-      viewBox="0 0 640 390"
-      role="img"
-      aria-label="A learner looking toward a bright horizon"
-      sx={{ width: '100%', display: 'block', mt: 'auto' }}
+      component="span"
+      aria-hidden="true"
+      sx={{
+        mr: 1.5,
+        fontSize: 25,
+        lineHeight: 1,
+        fontWeight: 900,
+        fontFamily: 'Arial, sans-serif',
+        background: 'conic-gradient(from -35deg, #4285f4 0 25%, #34a853 25% 45%, #fbbc05 45% 68%, #ea4335 68% 83%, #4285f4 83% 100%)',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+      }}
     >
-      <defs>
-        <linearGradient id="lumenSky" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#243d8f" />
-          <stop offset="48%" stopColor="#766fb3" />
-          <stop offset="100%" stopColor="#f6b36f" />
-        </linearGradient>
-        <linearGradient id="lumenGround" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#14295c" />
-          <stop offset="100%" stopColor="#0b1837" />
-        </linearGradient>
-      </defs>
-      <rect width="640" height="390" fill="url(#lumenSky)" />
-      <circle cx="470" cy="225" r="44" fill="#ffe69b" opacity="0.95" />
-      <path d="M0 255 L100 188 L184 246 L274 175 L382 248 L470 182 L640 265 V390 H0 Z" fill="#334e92" opacity="0.9" />
-      <path d="M0 290 L124 222 L210 278 L320 220 L430 286 L548 215 L640 266 V390 H0 Z" fill="#1f396f" />
-      <path d="M0 318 C130 290 210 338 318 300 C420 264 520 314 640 270 V390 H0 Z" fill="url(#lumenGround)" />
-      <path d="M360 258 C405 274 426 291 445 329 C463 365 520 363 570 345" fill="none" stroke="#f7d48a" strokeWidth="9" strokeLinecap="round" opacity="0.75" />
-      <circle cx="213" cy="243" r="24" fill="#18204a" />
-      <path d="M188 275 C196 251 230 249 238 275 L248 344 H177 Z" fill="#18204a" />
-      <rect x="176" y="278" width="26" height="58" rx="10" fill="#6f5ba7" />
-      <path d="M203 271 C212 278 223 287 232 302" fill="none" stroke="#f0c49d" strokeWidth="8" strokeLinecap="round" />
-      <path d="M187 343 L176 378" stroke="#18204a" strokeWidth="11" strokeLinecap="round" />
-      <path d="M232 343 L241 378" stroke="#18204a" strokeWidth="11" strokeLinecap="round" />
-      <circle cx="90" cy="70" r="3" fill="#fff" opacity="0.85" />
-      <circle cx="142" cy="112" r="2" fill="#fff" opacity="0.7" />
-      <circle cx="515" cy="72" r="2.5" fill="#fff" opacity="0.9" />
-      <circle cx="565" cy="118" r="2" fill="#fff" opacity="0.8" />
+      G
     </Box>
   );
 }
 
 function Capability({ icon, title, copy, tint }: { icon: string; title: string; copy: string; tint: string }) {
   return (
-    <Stack spacing={1.1} alignItems="center" textAlign="center">
+    <Stack spacing={1.15} alignItems="center" textAlign="center" sx={{ minWidth: 0 }}>
       <Box
         aria-hidden="true"
         sx={{
-          width: 58,
-          height: 58,
+          width: { xs: 54, sm: 66 },
+          height: { xs: 54, sm: 66 },
           borderRadius: '50%',
           display: 'grid',
           placeItems: 'center',
           bgcolor: tint,
-          fontSize: 26,
+          fontSize: { xs: 24, sm: 30 },
+          boxShadow: 'inset 0 0 0 1px rgba(16,43,96,0.02)',
         }}
       >
         {icon}
       </Box>
-      <Typography fontWeight={800} color="primary.dark">{title}</Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 170 }}>{copy}</Typography>
+      <Typography sx={{ fontWeight: 800, color: '#0b1f5e', fontSize: { xs: '0.9rem', sm: '1.03rem' }, lineHeight: 1.25 }}>
+        {title}
+      </Typography>
+      <Typography sx={{ color: '#62719a', fontSize: { xs: '0.78rem', sm: '0.88rem' }, lineHeight: 1.45, maxWidth: 170 }}>
+        {copy}
+      </Typography>
     </Stack>
   );
 }
 
 function SignInLanding() {
   return (
-    <Box component="main" sx={{ minHeight: '100vh', px: { xs: 2, sm: 4 }, py: { xs: 3, md: 5 }, display: 'grid', placeItems: 'center' }}>
+    <Box
+      component="main"
+      sx={{
+        minHeight: '100vh',
+        p: { xs: 1.5, sm: 3, md: 4 },
+        display: 'grid',
+        placeItems: 'center',
+        overflow: 'hidden',
+        background: 'radial-gradient(circle at 15% 12%, rgba(255,255,255,.95), transparent 27%), radial-gradient(circle at 92% 86%, rgba(203,219,249,.85), transparent 25%), #eef4ff',
+      }}
+    >
       <Box
         sx={{
-          width: 'min(1180px, 100%)',
-          minHeight: { md: 720 },
+          width: 'min(1330px, 94vw)',
+          minHeight: { xs: 760, md: 'min(795px, calc(100vh - 54px))' },
           display: 'grid',
           gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-          borderRadius: { xs: 3, md: 5 },
+          borderRadius: { xs: 4, md: '56px' },
           overflow: 'hidden',
-          bgcolor: 'background.paper',
-          boxShadow: '0 28px 80px rgba(34, 67, 132, 0.18)',
-          border: '1px solid rgba(116, 143, 201, 0.18)',
+          bgcolor: '#fff',
+          boxShadow: '0 34px 90px rgba(44, 72, 125, 0.18)',
+          border: '1px solid rgba(116, 143, 201, 0.10)',
         }}
       >
         <Box
           sx={{
-            position: 'relative',
-            minHeight: { xs: 520, md: 'auto' },
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden',
+            display: { xs: 'none', md: 'block' },
+            minWidth: 0,
+            height: '100%',
             bgcolor: '#102451',
-            color: 'common.white',
           }}
         >
-          <Stack spacing={1.5} alignItems="center" textAlign="center" sx={{ px: 4, pt: { xs: 5, md: 7 }, zIndex: 1 }}>
-            <Typography aria-hidden="true" sx={{ fontSize: 34, lineHeight: 1 }}>✦</Typography>
-            <Typography variant="h2" component="div" sx={{ fontSize: { xs: '2.25rem', md: '2.7rem' } }}>Lumen</Typography>
-            <Typography variant="h4" component="div" sx={{ maxWidth: 410, fontSize: { xs: '1.55rem', md: '1.85rem' }, lineHeight: 1.25 }}>
-              Bright learning for brighter tomorrows
-            </Typography>
-            <Typography sx={{ color: 'rgba(255,255,255,0.78)', fontSize: { xs: '1rem', md: '1.08rem' } }}>
-              Personalised practice. Real progress.<br />For every curious mind.
-            </Typography>
-          </Stack>
-          <DawnIllustration />
+          <Box
+            component="img"
+            src={signinLeftReference}
+            alt="Lumen — bright learning for brighter tomorrows"
+            sx={{ width: '100%', height: '100%', display: 'block', objectFit: 'cover' }}
+          />
         </Box>
 
-        <Stack sx={{ p: { xs: 4, sm: 6, md: 7 }, minWidth: 0 }}>
-          <Stack direction="row" spacing={1} alignItems="center">
+        <Stack
+          sx={{
+            minWidth: 0,
+            px: { xs: 4, sm: 6, md: 7.5 },
+            py: { xs: 5, md: 6.5 },
+            bgcolor: '#fff',
+          }}
+        >
+          <Stack direction="row" spacing={1.1} alignItems="center">
             <LumenMark />
-            <Typography variant="h4" component="div" color="primary.dark">Lumen</Typography>
+            <Typography sx={{ fontSize: { xs: '1.8rem', md: '2.1rem' }, fontWeight: 800, color: '#0b1f5e', letterSpacing: '-0.03em' }}>
+              Lumen
+            </Typography>
           </Stack>
 
-          <Box sx={{ mt: { xs: 5, md: 8 } }}>
-            <Typography variant="h2" component="h1" sx={{ fontSize: { xs: '2.2rem', md: '3rem' } }}>Welcome back</Typography>
-            <Typography color="text.secondary" sx={{ mt: 0.8, fontSize: '1.12rem' }}>
+          <Box sx={{ mt: { xs: 7, md: 10 } }}>
+            <Typography component="h1" sx={{ fontSize: { xs: '2.45rem', md: '3.25rem' }, fontWeight: 800, letterSpacing: '-0.035em', lineHeight: 1.05, color: '#0b1f5e' }}>
+              Welcome back
+            </Typography>
+            <Typography sx={{ mt: 1.05, color: '#62719a', fontSize: { xs: '1.05rem', md: '1.24rem' } }}>
               Sign in to your Lumen account.
             </Typography>
           </Box>
@@ -181,23 +181,37 @@ function SignInLanding() {
           <Button
             variant="outlined"
             href="/oauth2/authorization/google"
-            sx={{ mt: 4, minHeight: 58, borderColor: '#d6dfef', color: 'primary.dark', fontSize: '1rem', bgcolor: '#fff' }}
+            sx={{
+              mt: 4.5,
+              minHeight: 72,
+              borderRadius: 2.5,
+              borderColor: '#d7e0f0',
+              color: '#0b1f5e',
+              bgcolor: '#fff',
+              fontSize: { xs: '1rem', md: '1.1rem' },
+              fontWeight: 800,
+              boxShadow: '0 7px 18px rgba(46, 79, 144, 0.06)',
+              '&:hover': { borderColor: '#b9c9e6', bgcolor: '#fff' },
+            }}
           >
-            <Box component="span" aria-hidden="true" sx={{ mr: 1.5, fontSize: 24, fontWeight: 900, color: '#4285f4' }}>G</Box>
+            <GoogleMark />
             Continue with Google
           </Button>
 
-          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: { xs: 1.5, sm: 3 }, mt: 5 }}>
-            <Capability icon="▣" title="Personalised practice" copy="Practice shaped around the learner." tint="#eaf1ff" />
-            <Capability icon="↗" title="Real progress" copy="See growth as learning continues." tint="#e6f8ef" />
-            <Capability icon="◎" title="Curriculum choices" copy="Choose the curricula your child follows." tint="#f0eaff" />
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', columnGap: { xs: 1.5, sm: 3 }, mt: { xs: 5, md: 5.2 } }}>
+            <Capability icon="📖" title="Personalised practice" copy="Learns with your child to build confidence." tint="#eaf1ff" />
+            <Capability icon="🌱" title="Real progress" copy="Celebrates growth at every step." tint="#e8f7ef" />
+            <Capability icon="💡" title="Curriculum choices" copy="Choose the curricula your child follows." tint="#f1ebff" />
           </Box>
 
-          <Stack direction="row" spacing={2.2} sx={{ mt: 'auto', pt: 7 }}>
-            <Typography variant="body2" color="primary.main">Privacy</Typography>
-            <Typography variant="body2" color="primary.main">Terms</Typography>
-            <Typography variant="body2" color="primary.main">Help</Typography>
+          <Stack direction="row" spacing={2.3} sx={{ mt: 'auto', pt: { xs: 6, md: 7.5 }, alignItems: 'center' }}>
+            <Typography component="a" href="#" sx={{ color: '#1677ff', textDecoration: 'none', fontSize: '0.86rem' }}>Privacy</Typography>
+            <Typography sx={{ color: '#b3bfd4' }}>|</Typography>
+            <Typography component="a" href="#" sx={{ color: '#1677ff', textDecoration: 'none', fontSize: '0.86rem' }}>Terms</Typography>
+            <Typography sx={{ color: '#b3bfd4' }}>|</Typography>
+            <Typography component="a" href="#" sx={{ color: '#1677ff', textDecoration: 'none', fontSize: '0.86rem' }}>Help</Typography>
           </Stack>
+          <Typography sx={{ mt: 1.4, color: '#7d8cac', fontSize: '0.8rem' }}>© 2026 Lumen.</Typography>
         </Stack>
       </Box>
     </Box>
