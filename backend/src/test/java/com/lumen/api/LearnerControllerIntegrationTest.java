@@ -112,7 +112,7 @@ class LearnerControllerIntegrationTest {
         accessRepository.save(new UserLearnerAccess(owner, learner, LearnerAccessLevel.OWNER));
 
         mockMvc.perform(get("/api/learners"))
-                .andExpect(status().is3xxRedirection());
+                .andExpect(status().isUnauthorized());
 
         mockMvc.perform(get("/api/learners").with(authenticatedAs("other-subject")))
                 .andExpect(status().isOk())
