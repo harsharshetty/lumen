@@ -23,7 +23,7 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: 'mvn --batch-mode test-compile spring-boot:run -Dspring-boot.run.useTestClasspath=true -Dspring-boot.run.main-class=com.lumen.e2e.E2eLumenApplication -Dspring-boot.run.profiles=e2e',
+      command: 'mvn --batch-mode test-compile dependency:build-classpath -DincludeScope=test -Dmdep.outputFile=target/e2e-classpath.txt && java -Dspring.profiles.active=e2e -cp "target/test-classes:target/classes:$(cat target/e2e-classpath.txt)" com.lumen.e2e.E2eLumenApplication',
       cwd: '../backend',
       url: 'http://127.0.0.1:8080/actuator/health',
       timeout: 120_000,
