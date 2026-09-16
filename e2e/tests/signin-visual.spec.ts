@@ -1,6 +1,5 @@
 import { expect, test } from '@playwright/test';
 import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 
 type ViewportCase = {
   name: 'desktop' | 'mobile';
@@ -18,9 +17,7 @@ const viewports: ViewportCase[] = [
   { name: 'mobile', width: 390, height: 844 },
 ];
 
-const approvedArtworkReference = readFileSync(
-  fileURLToPath(new URL('../../frontend/src/assets/signin-left-reference.jpg', import.meta.url)),
-).toString('base64');
+const approvedArtworkReference = readFileSync('../frontend/src/assets/signin-left-reference.jpg').toString('base64');
 
 async function compareApprovedArtwork(
   page: import('@playwright/test').Page,
