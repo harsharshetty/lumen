@@ -1,5 +1,6 @@
 package com.lumen.repository;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.UUID;
@@ -7,16 +8,16 @@ import java.util.UUID;
 import javax.sql.DataSource;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 @ActiveProfiles("postgres")
-@Transactional
+@EnabledIfEnvironmentVariable(named = "DATABASE_URL", matches = "jdbc:postgresql:.*")
 class PostgresPersistenceIntegrationTest {
 
     @Autowired DataSource dataSource;
@@ -24,18 +25,13 @@ class PostgresPersistenceIntegrationTest {
 
     @Test
     void flywayMigratesEmptyPostgresAndEnforcesIdentityAndAssociationConstraints() throws Exception {
-        assertThatThrownBy(() -> {
-            try (var connection = dataSource.getConnection()) {
-                if (!"PostgreSQL".equals(connection.getMetaData().getDatabaseProductName())) {
-                    throw new AssertionError("Persistence authority must be PostgreSQL");
-                }
-            }
-            throw new IllegalStateException("PostgreSQL check unexpectedly continued");
-        }).isInstanceOf(IllegalStateException.class);
+        try (var connection = dataSource.getConnection()) {
+            assertThat(connection.getMetaData().getDatabaseProductName()).isEqualTo("PostgreSQL");
+        }
 
         Integer migrations = jdbc.queryForObject(
                 "select count(*) from flyway_schema_history where success = true", Integer.class);
-        org.assertj.core.api.Assertions.assertThat(migrations).isGreaterThanOrEqualTo(5);
+        assertThat(migrations).isGreaterThanOrEqualTo(5);
 
         UUID user = UUID.randomUUID();
         UUID secondUser = UUID.randomUUID();
