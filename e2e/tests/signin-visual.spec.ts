@@ -130,9 +130,13 @@ for (const viewport of viewports) {
 
     const actualSrc = await artwork.evaluate((node) => (node as HTMLImageElement).currentSrc);
     expect(actualSrc).toBeTruthy();
-    const assetResponse = await page.request.get(actualSrc);
-    expect(assetResponse.status()).toBe(200);
-    expect(assetResponse.headers()['content-type']).toMatch(/^image\//);
+    if (actualSrc.startsWith('data:')) {
+      expect(actualSrc).toMatch(/^data:image\/(?:jpeg|png|webp);base64,/);
+    } else {
+      const assetResponse = await page.request.get(actualSrc);
+      expect(assetResponse.status()).toBe(200);
+      expect(assetResponse.headers()['content-type']).toMatch(/^image\//);
+    }
 
     const renderedArtworkStyle = await artwork.evaluate((node) => {
       const style = getComputedStyle(node);
