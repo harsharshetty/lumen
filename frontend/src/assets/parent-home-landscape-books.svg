@@ -1,21 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 620" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1672 941" role="img" aria-labelledby="title desc" preserveAspectRatio="xMidYMid meet">
   <title id="title">Learning journey illustration</title>
-  <desc id="desc">Pastel mountains with a goal flag and a stack of books.</desc>
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#f7fbff"/><stop offset="1" stop-color="#e8f2ff"/></linearGradient>
-  </defs>
-  <rect width="900" height="620" rx="44" fill="url(#bg)"/>
-  <circle cx="690" cy="360" r="58" fill="#ffe39a"/>
-  <path d="M0 500 L130 382 L225 470 L320 330 L430 472 L565 385 L690 475 L790 345 L900 470 L900 620 L0 620 Z" fill="#b9d9fb"/>
-  <path d="M0 550 L150 430 L250 525 L365 400 L485 520 L640 420 L755 525 L850 430 L900 485 L900 620 L0 620 Z" fill="#7eb5ed"/>
-  <path d="M310 332 V258" stroke="#506fba" stroke-width="10" stroke-linecap="round"/>
-  <path d="M310 258 H392 L374 292 H310 Z" fill="#ff6f7d"/>
-  <g transform="translate(650 78)">
-    <rect x="0" y="118" width="170" height="56" rx="18" fill="#f5b93f" transform="rotate(-4 0 118)"/>
-    <rect x="12" y="62" width="170" height="56" rx="18" fill="#44ad76" transform="rotate(3 12 62)"/>
-    <rect x="5" y="10" width="170" height="56" rx="18" fill="#2f86f2" transform="rotate(-2 5 10)"/>
-    <rect x="24" y="22" width="122" height="32" rx="10" fill="#fff4cf"/>
-    <rect x="34" y="76" width="122" height="32" rx="10" fill="#fff4cf"/>
-    <rect x="22" y="132" width="122" height="32" rx="10" fill="#fff4cf"/>
-  </g>
+  <desc id="desc">Pastel mountains, a goal flag, sunrise and floating books.</desc>
+  <image href="/assets/parent-home-approved.webp" width="1672" height="941" preserveAspectRatio="xMidYMid meet" />
 </svg>
