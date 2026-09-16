@@ -22,8 +22,12 @@ const approvedArtworkReference = readFileSync(
   fileURLToPath(new URL('../../frontend/src/assets/signin-left-reference.jpg', import.meta.url)),
 ).toString('base64');
 
-async function compareApprovedArtwork(page: import('@playwright/test').Page): Promise<ArtworkDiff> {
-  return page.evaluate(async (referenceBase64) => {
+async function compareApprovedArtwork(
+  page: import('@playwright/test').Page,
+  renderedWidth: number,
+  renderedHeight: number,
+): Promise<ArtworkDiff> {
+  return page.evaluate(async ({ referenceBase64, renderedWidth, renderedHeight }) => {
     const loadImage = (src: string) => new Promise<HTMLImageElement>((resolve, reject) => {
       const image = new Image();
       image.onload = () => resolve(image);
@@ -38,6 +42,7 @@ async function compareApprovedArtwork(page: import('@playwright/test').Page): Pr
 
     const width = 128;
     const height = 128;
+    const targetAspectRatio = renderedWidth / renderedHeight;
     const actualCanvas = document.createElement('canvas');
     const referenceCanvas = document.createElement('canvas');
     actualCanvas.width = referenceCanvas.width = width;
@@ -47,8 +52,41 @@ async function compareApprovedArtwork(page: import('@playwright/test').Page): Pr
     const referenceContext = referenceCanvas.getContext('2d', { willReadFrequently: true });
     if (!actualContext || !referenceContext) throw new Error('Canvas 2D context unavailable');
 
-    actualContext.drawImage(actual, 0, 0, width, height);
-    referenceContext.drawImage(reference, 0, 0, width, height);
+    const drawCover = (
+      context: CanvasRenderingContext2D,
+      image: HTMLImageElement,
+      destinationWidth: number,
+      destinationHeight: number,
+    ) => {
+      const sourceAspectRatio = image.naturalWidth / image.naturalHeight;
+      let sourceWidth = image.naturalWidth;
+      let sourceHeight = image.naturalHeight;
+      let sourceX = 0;
+      let sourceY = 0;
+
+      if (sourceAspectRatio > targetAspectRatio) {
+        sourceWidth = image.naturalHeight * targetAspectRatio;
+        sourceX = (image.naturalWidth - sourceWidth) / 2;
+      } else {
+        sourceHeight = image.naturalWidth / targetAspectRatio;
+        sourceY = (image.naturalHeight - sourceHeight) / 2;
+      }
+
+      context.drawImage(
+        image,
+        sourceX,
+        sourceY,
+        sourceWidth,
+        sourceHeight,
+        0,
+        0,
+        destinationWidth,
+        destinationHeight,
+      );
+    };
+
+    drawCover(actualContext, actual, width, height);
+    drawCover(referenceContext, reference, width, height);
 
     const actualPixels = actualContext.getImageData(0, 0, width, height).data;
     const referencePixels = referenceContext.getImageData(0, 0, width, height).data;
@@ -69,7 +107,7 @@ async function compareApprovedArtwork(page: import('@playwright/test').Page): Pr
       meanAbsoluteChannelDifference: absoluteChannelDifference / (pixelCount * 3),
       changedPixelRatio: changedPixels / pixelCount,
     };
-  }, approvedArtworkReference);
+  }, { referenceBase64: approvedArtworkReference, renderedWidth, renderedHeight });
 }
 
 for (const viewport of viewports) {
@@ -124,16 +162,6 @@ for (const viewport of viewports) {
     expect(renderedArtworkStyle.opacity).toBeGreaterThanOrEqual(0.99);
     expect(renderedArtworkStyle.objectFit).toBe('cover');
 
-    const artworkDiff = await compareApprovedArtwork(page);
-    expect(
-      artworkDiff.meanAbsoluteChannelDifference,
-      'Production sign-in artwork drifted too far from the committed approved reference',
-    ).toBeLessThan(24);
-    expect(
-      artworkDiff.changedPixelRatio,
-      'Too much of the production sign-in artwork differs from the committed approved reference',
-    ).toBeLessThan(0.35);
-
     const overflow = await page.evaluate(() => ({
       documentWidth: document.documentElement.scrollWidth,
       viewportWidth: window.innerWidth,
@@ -153,6 +181,16 @@ for (const viewport of viewports) {
     expect(Math.abs(imageBox.y - artworkBox.y)).toBeLessThanOrEqual(1);
     expect(Math.abs(imageBox.width - artworkBox.width)).toBeLessThanOrEqual(1);
     expect(Math.abs(imageBox.height - artworkBox.height)).toBeLessThanOrEqual(1);
+
+    const artworkDiff = await compareApprovedArtwork(page, imageBox.width, imageBox.height);
+    expect(
+      artworkDiff.meanAbsoluteChannelDifference,
+      'Production sign-in artwork drifted too far from the committed approved reference',
+    ).toBeLessThan(24);
+    expect(
+      artworkDiff.changedPixelRatio,
+      'Too much of the production sign-in artwork differs from the committed approved reference',
+    ).toBeLessThan(0.35);
 
     if (viewport.name === 'desktop') {
       expect(artworkBox.width).toBeGreaterThan(viewport.width * 0.4);
