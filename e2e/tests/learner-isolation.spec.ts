@@ -79,13 +79,19 @@ test('isolates one parent learner from another authenticated user', async ({ bro
 
 test('enforces viewer contributor and multiple-owner access through the browser boundary', async ({ browser }) => {
   const suffix = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  const learnerName = `Access matrix ${suffix}`;
   const ownerContext = await browser.newContext(authenticatedContextOptions(`owner-matrix-${suffix}`, 'Matrix Owner'));
   const ownerPage = await ownerContext.newPage();
   await ownerPage.goto('/');
   await ownerPage.getByRole('button', { name: 'Add learner' }).click();
-  await ownerPage.getByLabel('Learner name').fill(`Access matrix ${suffix}`);
+  await ownerPage.getByLabel('Learner name').fill(learnerName);
   await ownerPage.getByRole('button', { name: 'Create learner' }).click();
-  const learnerId = await ownerPage.evaluate(async () => (await (await fetch('/api/learners')).json() as Array<{ id: string }>)[0].id);
+  const matchingLearners = await ownerPage.evaluate(async (expectedName) => {
+    const learners = await (await fetch('/api/learners')).json() as Array<{ id: string; displayName: string }>;
+    return learners.filter((learner) => learner.displayName === expectedName);
+  }, learnerName);
+  expect(matchingLearners).toHaveLength(1);
+  const learnerId = matchingLearners[0].id;
 
   const viewer = await createAccessContext(browser, `viewer-${suffix}`, learnerId, 'VIEWER');
   expect((await viewer.page.evaluate(async (id) => (await fetch(`/api/learners/${id}`)).status, learnerId))).toBe(200);
@@ -101,7 +107,7 @@ test('enforces viewer contributor and multiple-owner access through the browser 
   const secondOwner = await createAccessContext(browser, `second-owner-${suffix}`, learnerId, 'OWNER');
   expect((await secondOwner.page.evaluate(async (id) => (await fetch(`/api/learners/${id}`)).status, learnerId))).toBe(200);
   await secondOwner.page.reload();
-  await expect(secondOwner.page.getByText(`Access matrix ${suffix}`)).toBeVisible();
+  await expect(secondOwner.page.getByText(learnerName)).toBeVisible();
   expect((await ownerPage.evaluate(async (id) => (await fetch(`/api/learners/${id}`)).status, learnerId))).toBe(200);
 
   await viewer.context.close();
