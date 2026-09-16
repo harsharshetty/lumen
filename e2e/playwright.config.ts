@@ -2,6 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests',
+  testIgnore: 'signin-visual.spec.ts',
   timeout: 30_000,
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),

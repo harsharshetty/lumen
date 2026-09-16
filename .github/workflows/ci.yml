@@ -44,13 +44,12 @@ jobs:
         run: npm run build
       - name: Verify frozen-screen assets are bundled
         run: |
-          for asset in signin-left-reference parent-home-landscape-books learner-avatar-1; do
-            if find dist -type f \( -name "${asset}*.svg" -o -name "${asset}*.jpg" \) -print -quit | grep -q .; then
-              echo "Frozen-screen asset ${asset} was emitted as a separate runtime asset" >&2
+          for asset in signin-approved.webp parent-home-approved.webp learner-avatar-1-approved.webp learner-avatar-2-approved.webp learner-avatar-3-approved.webp; do
+            if [ ! -s "dist/assets/${asset}" ]; then
+              echo "Approved frozen-screen asset ${asset} is missing from the production build" >&2
               exit 1
             fi
           done
-          grep -R -q 'data:image/svg+xml' dist/assets
 
   controller:
     runs-on: ubuntu-latest
@@ -64,10 +63,70 @@ jobs:
 
   container:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: lumen
+          POSTGRES_USER: lumen
+          POSTGRES_PASSWORD: lumen
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U lumen -d lumen"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
-      - name: Build production backend image
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Build production image
         run: docker build --tag lumen-backend:ci .
+      - name: Start production image
+        run: |
+          docker run --detach --name lumen-ui-ci --network host \
+            -e DATABASE_URL=jdbc:postgresql://127.0.0.1:5432/lumen \
+            -e DATABASE_USERNAME=lumen \
+            -e DATABASE_PASSWORD=lumen \
+            -e PORT=8080 \
+            lumen-backend:ci
+          for attempt in $(seq 1 75); do
+            if curl --fail --silent http://127.0.0.1:8080/actuator/health >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker logs lumen-ui-ci
+          exit 1
+      - name: Install visual acceptance dependencies
+        working-directory: e2e
+        run: npm install --no-audit --no-fund
+      - name: Install Chromium for visual acceptance
+        working-directory: e2e
+        run: npx playwright install --with-deps chromium
+      - name: Validate production UI on desktop and mobile
+        working-directory: e2e
+        env:
+          BASE_URL: http://127.0.0.1:8080
+        run: npx playwright test --config=playwright.visual.config.ts
+      - name: Upload production UI evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-ui-evidence
+          path: |
+            e2e/playwright-report
+            e2e/test-results
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Show production container logs
+        if: failure()
+        run: docker logs lumen-ui-ci || true
+      - name: Stop production image
+        if: always()
+        run: docker rm --force lumen-ui-ci || true
 
   e2e:
     needs: [backend, frontend]
