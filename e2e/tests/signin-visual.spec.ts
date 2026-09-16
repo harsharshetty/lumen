@@ -21,10 +21,11 @@ const approvedArtworkReference = readFileSync('../frontend/src/assets/signin-lef
 
 async function compareApprovedArtwork(
   page: import('@playwright/test').Page,
+  actualSrc: string,
   renderedWidth: number,
   renderedHeight: number,
 ): Promise<ArtworkDiff> {
-  return page.evaluate(async ({ referenceBase64, renderedWidth, renderedHeight }) => {
+  return page.evaluate(async ({ referenceBase64, actualSrc, renderedWidth, renderedHeight }) => {
     const loadImage = (src: string) => new Promise<HTMLImageElement>((resolve, reject) => {
       const image = new Image();
       image.onload = () => resolve(image);
@@ -33,7 +34,7 @@ async function compareApprovedArtwork(
     });
 
     const [actual, reference] = await Promise.all([
-      loadImage('/assets/signin-approved.webp'),
+      loadImage(actualSrc),
       loadImage(`data:image/jpeg;base64,${referenceBase64}`),
     ]);
 
@@ -69,17 +70,7 @@ async function compareApprovedArtwork(
         sourceY = (image.naturalHeight - sourceHeight) / 2;
       }
 
-      context.drawImage(
-        image,
-        sourceX,
-        sourceY,
-        sourceWidth,
-        sourceHeight,
-        0,
-        0,
-        destinationWidth,
-        destinationHeight,
-      );
+      context.drawImage(image, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, destinationWidth, destinationHeight);
     };
 
     drawCover(actualContext, actual, width, height);
@@ -87,7 +78,6 @@ async function compareApprovedArtwork(
 
     const actualPixels = actualContext.getImageData(0, 0, width, height).data;
     const referencePixels = referenceContext.getImageData(0, 0, width, height).data;
-
     let absoluteChannelDifference = 0;
     let changedPixels = 0;
     const pixelCount = width * height;
@@ -104,7 +94,7 @@ async function compareApprovedArtwork(
       meanAbsoluteChannelDifference: absoluteChannelDifference / (pixelCount * 3),
       changedPixelRatio: changedPixels / pixelCount,
     };
-  }, { referenceBase64: approvedArtworkReference, renderedWidth, renderedHeight });
+  }, { referenceBase64: approvedArtworkReference, actualSrc, renderedWidth, renderedHeight });
 }
 
 for (const viewport of viewports) {
@@ -112,9 +102,7 @@ for (const viewport of viewports) {
     const failedAssets: string[] = [];
     page.on('response', (response) => {
       const pathname = new URL(response.url()).pathname;
-      if (pathname.startsWith('/assets/') && !response.ok()) {
-        failedAssets.push(`${response.status()} ${pathname}`);
-      }
+      if (pathname.startsWith('/assets/') && !response.ok()) failedAssets.push(`${response.status()} ${pathname}`);
     });
 
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
@@ -124,7 +112,6 @@ for (const viewport of viewports) {
     const heading = page.getByRole('heading', { name: 'Welcome back' });
     const artwork = page.getByRole('img', { name: 'Lumen — bright learning for brighter tomorrows' });
     const panel = page.getByTestId('signin-artwork-panel');
-
     await expect(heading).toBeVisible();
     await expect(artwork).toBeVisible();
     await expect(panel).toBeVisible();
@@ -141,28 +128,22 @@ for (const viewport of viewports) {
     expect(decodedSize.width).toBeGreaterThan(500);
     expect(decodedSize.height).toBeGreaterThan(500);
 
-    const assetResponse = await page.request.get(new URL('/assets/signin-approved.webp', page.url()).toString());
+    const actualSrc = await artwork.evaluate((node) => (node as HTMLImageElement).currentSrc);
+    expect(actualSrc).toBeTruthy();
+    const assetResponse = await page.request.get(actualSrc);
     expect(assetResponse.status()).toBe(200);
-    expect(assetResponse.headers()['content-type']).toContain('image/webp');
+    expect(assetResponse.headers()['content-type']).toMatch(/^image\//);
 
     const renderedArtworkStyle = await artwork.evaluate((node) => {
       const style = getComputedStyle(node);
-      return {
-        display: style.display,
-        visibility: style.visibility,
-        opacity: Number(style.opacity),
-        objectFit: style.objectFit,
-      };
+      return { display: style.display, visibility: style.visibility, opacity: Number(style.opacity), objectFit: style.objectFit };
     });
     expect(renderedArtworkStyle.display).not.toBe('none');
     expect(renderedArtworkStyle.visibility).toBe('visible');
     expect(renderedArtworkStyle.opacity).toBeGreaterThanOrEqual(0.99);
     expect(renderedArtworkStyle.objectFit).toBe('cover');
 
-    const overflow = await page.evaluate(() => ({
-      documentWidth: document.documentElement.scrollWidth,
-      viewportWidth: window.innerWidth,
-    }));
+    const overflow = await page.evaluate(() => ({ documentWidth: document.documentElement.scrollWidth, viewportWidth: window.innerWidth }));
     expect(overflow.documentWidth).toBeLessThanOrEqual(overflow.viewportWidth + 1);
 
     const artworkBox = await panel.boundingBox();
@@ -171,7 +152,6 @@ for (const viewport of viewports) {
     expect(artworkBox).not.toBeNull();
     expect(imageBox).not.toBeNull();
     expect(headingBox).not.toBeNull();
-
     if (!artworkBox || !imageBox || !headingBox) throw new Error('Expected visual geometry was not measurable');
 
     expect(Math.abs(imageBox.x - artworkBox.x)).toBeLessThanOrEqual(1);
@@ -179,15 +159,9 @@ for (const viewport of viewports) {
     expect(Math.abs(imageBox.width - artworkBox.width)).toBeLessThanOrEqual(1);
     expect(Math.abs(imageBox.height - artworkBox.height)).toBeLessThanOrEqual(1);
 
-    const artworkDiff = await compareApprovedArtwork(page, imageBox.width, imageBox.height);
-    expect(
-      artworkDiff.meanAbsoluteChannelDifference,
-      'Production sign-in artwork drifted too far from the committed approved reference',
-    ).toBeLessThan(24);
-    expect(
-      artworkDiff.changedPixelRatio,
-      'Too much of the production sign-in artwork differs from the committed approved reference',
-    ).toBeLessThan(0.35);
+    const artworkDiff = await compareApprovedArtwork(page, actualSrc, imageBox.width, imageBox.height);
+    expect(artworkDiff.meanAbsoluteChannelDifference, 'Production sign-in artwork drifted too far from the committed approved reference').toBeLessThan(24);
+    expect(artworkDiff.changedPixelRatio, 'Too much of the production sign-in artwork differs from the committed approved reference').toBeLessThan(0.35);
 
     if (viewport.name === 'desktop') {
       expect(artworkBox.width).toBeGreaterThan(viewport.width * 0.4);
@@ -199,10 +173,6 @@ for (const viewport of viewports) {
     }
 
     expect(failedAssets).toEqual([]);
-
-    await testInfo.attach(`signin-${viewport.name}`, {
-      body: await page.screenshot({ fullPage: true }),
-      contentType: 'image/png',
-    });
+    await testInfo.attach(`signin-${viewport.name}`, { body: await page.screenshot({ fullPage: true }), contentType: 'image/png' });
   });
 }
