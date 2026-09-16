@@ -1,6 +1,7 @@
 package com.lumen.api;
 
 import com.lumen.service.CurriculumCatalogService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
@@ -28,7 +29,7 @@ public class CurriculumCatalogController {
 
     @PostMapping("/api/admin/curricula")
     @ResponseStatus(HttpStatus.CREATED)
-    CurriculumResponse create(OAuth2AuthenticationToken authentication, @RequestBody CurriculumUpsertRequest request) {
+    CurriculumResponse create(OAuth2AuthenticationToken authentication, @Valid @RequestBody CurriculumUpsertRequest request) {
         return CurriculumResponse.from(curriculumCatalogService.create(
                 authentication, request.name(), request.gradeLevel(), request.subjectId()));
     }
@@ -36,7 +37,7 @@ public class CurriculumCatalogController {
     @PutMapping("/api/admin/curricula/{curriculumId}")
     CurriculumResponse update(OAuth2AuthenticationToken authentication,
                               @PathVariable UUID curriculumId,
-                              @RequestBody CurriculumUpsertRequest request) {
+                              @Valid @RequestBody CurriculumUpsertRequest request) {
         return CurriculumResponse.from(curriculumCatalogService.update(
                 authentication, curriculumId, request.name(), request.gradeLevel(), request.subjectId()));
     }

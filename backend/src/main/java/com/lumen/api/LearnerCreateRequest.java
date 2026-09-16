@@ -1,4 +1,6 @@
 package com.lumen.api;
 
-public record LearnerCreateRequest(String displayName) {
+import jakarta.validation.constraints.NotBlank;
+
+public record LearnerCreateRequest(@NotBlank String displayName) {
 }

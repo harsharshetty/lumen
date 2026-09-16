@@ -2,6 +2,7 @@ package com.lumen.api;
 
 import com.lumen.service.LearnerCurriculumSelectionService;
 import com.lumen.service.LearnerOnboardingService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
@@ -26,7 +27,7 @@ public class LearnerController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    LearnerResponse create(OAuth2AuthenticationToken authentication, @RequestBody LearnerCreateRequest request) {
+    LearnerResponse create(OAuth2AuthenticationToken authentication, @Valid @RequestBody LearnerCreateRequest request) {
         return LearnerResponse.from(learnerOnboardingService.create(authentication, request.displayName()));
     }
 
