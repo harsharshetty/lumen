@@ -121,7 +121,7 @@ function SignInLanding() {
         p: { xs: 1.5, sm: 3, md: 4 },
         display: 'grid',
         placeItems: 'center',
-        overflow: 'hidden',
+        overflowX: 'hidden',
         background: 'radial-gradient(circle at 15% 12%, rgba(255,255,255,.95), transparent 27%), radial-gradient(circle at 92% 86%, rgba(203,219,249,.85), transparent 25%), #eef4ff',
       }}
     >
@@ -140,9 +140,9 @@ function SignInLanding() {
       >
         <Box
           sx={{
-            display: { xs: 'none', md: 'block' },
+            display: 'block',
             minWidth: 0,
-            height: '100%',
+            height: { xs: 'auto', md: '100%' },
             bgcolor: '#102451',
           }}
         >
@@ -150,7 +150,12 @@ function SignInLanding() {
             component="img"
             src={signinLeftReference}
             alt="Lumen — bright learning for brighter tomorrows"
-            sx={{ width: '100%', height: '100%', display: 'block', objectFit: 'cover' }}
+            sx={{
+              width: '100%',
+              height: { xs: 'auto', md: '100%' },
+              display: 'block',
+              objectFit: { xs: 'contain', md: 'cover' },
+            }}
           />
         </Box>
 
