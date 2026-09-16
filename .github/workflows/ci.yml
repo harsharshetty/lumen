@@ -42,13 +42,15 @@ jobs:
         run: npm run test:coverage
       - name: Build frontend
         run: npm run build
-      - name: Verify approved sign-in artwork is embedded
+      - name: Verify frozen-screen assets are bundled
         run: |
-          if find dist -type f -name 'signin-left-reference*.jpg' -print -quit | grep -q .; then
-            echo 'Approved sign-in artwork was emitted as a separate runtime asset' >&2
-            exit 1
-          fi
-          grep -R -q 'data:image/jpeg;base64' dist/assets
+          for asset in signin-left-reference parent-home-landscape-books learner-avatar-1; do
+            if find dist -type f \( -name "${asset}*.svg" -o -name "${asset}*.jpg" \) -print -quit | grep -q .; then
+              echo "Frozen-screen asset ${asset} was emitted as a separate runtime asset" >&2
+              exit 1
+            fi
+          done
+          grep -R -q 'data:image/svg+xml' dist/assets
 
   controller:
     runs-on: ubuntu-latest
