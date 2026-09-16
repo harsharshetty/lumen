@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import ParentOnboardingFlow from './ParentOnboardingFlow';
 import type { CurriculumChoice } from './LearnerCurriculumSelection';
 import type { LearnerSummary } from './learnerTypes';
-import signinLeftReference from './assets/signin-left-reference.jpg';
+import signinLeftReference from './assets/signin-left-reference.svg';
 
 type FlowState = 'loading' | 'error' | 'forbidden' | 'ready';
 type LearnerViewState = FlowState | 'unauthenticated';
