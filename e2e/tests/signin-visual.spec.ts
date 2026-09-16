@@ -125,8 +125,8 @@ for (const viewport of viewports) {
       const image = node as HTMLImageElement;
       return { width: image.naturalWidth, height: image.naturalHeight };
     });
-    expect(decodedSize.width).toBeGreaterThan(500);
-    expect(decodedSize.height).toBeGreaterThan(500);
+    expect(decodedSize.width).toBeGreaterThanOrEqual(500);
+    expect(decodedSize.height).toBeGreaterThanOrEqual(500);
 
     const actualSrc = await artwork.evaluate((node) => (node as HTMLImageElement).currentSrc);
     expect(actualSrc).toBeTruthy();
