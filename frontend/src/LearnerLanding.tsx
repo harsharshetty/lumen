@@ -9,6 +9,8 @@ import {
   Typography,
 } from '@mui/material';
 import type { ReactNode } from 'react';
+import parentHomeLandscape from './assets/parent-home-landscape-books.svg';
+import learnerAvatarOne from './assets/learner-avatar-1.svg';
 import type { LearnerSummary } from './learnerTypes';
 
 type Props = {
@@ -103,12 +105,17 @@ function ParentShell({ children }: { children: ReactNode }) {
               position: 'relative',
             }}
           >
-            <Box sx={{ position: 'absolute', left: -35, right: -35, top: 56, height: 90, bgcolor: '#bdd5f6', transform: 'rotate(-8deg)', borderRadius: '50%' }} />
-            <Box sx={{ position: 'absolute', left: 50, right: -50, top: 82, height: 90, bgcolor: '#8fb9ec', transform: 'rotate(10deg)', borderRadius: '50%' }} />
-            <Typography sx={{ position: 'relative', fontWeight: 800, fontSize: '1.08rem', lineHeight: 1.45, maxWidth: 170 }}>
+            <Typography sx={{ position: 'relative', zIndex: 1, fontWeight: 800, fontSize: '1.08rem', lineHeight: 1.45, maxWidth: 170 }}>
               Learning today for bigger tomorrows
             </Typography>
-            <Box sx={{ position: 'relative', mt: 1.5, width: 56, height: 3, borderRadius: 999, bgcolor: '#1677ff', transform: 'rotate(-7deg)' }} />
+            <Box sx={{ position: 'relative', zIndex: 1, mt: 1.5, width: 56, height: 3, borderRadius: 999, bgcolor: '#1677ff', transform: 'rotate(-7deg)' }} />
+            <Box
+              component="img"
+              src={parentHomeLandscape}
+              alt=""
+              aria-hidden="true"
+              sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center bottom', opacity: 0.42 }}
+            />
           </Box>
         </Box>
 
@@ -156,23 +163,23 @@ function MotivationCard() {
         p: 3.5,
         position: 'relative',
         overflow: 'hidden',
-        background: 'linear-gradient(145deg, #edf5ff 0%, #e8f2ff 62%, #dceaff 100%)',
+        bgcolor: '#edf5ff',
       }}
     >
+      <Box
+        component="img"
+        src={parentHomeLandscape}
+        alt=""
+        aria-hidden="true"
+        sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center bottom' }}
+      />
+      <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(237,245,255,.97) 0%, rgba(237,245,255,.84) 48%, rgba(237,245,255,.12) 100%)' }} />
       <Typography sx={{ position: 'relative', zIndex: 1, color: '#0b1f5e', fontWeight: 800, fontSize: '1.45rem', lineHeight: 1.25, maxWidth: 250 }}>
         Consistent practice builds real progress.
       </Typography>
       <Typography sx={{ position: 'relative', zIndex: 1, mt: 2, color: '#54709e', lineHeight: 1.55, maxWidth: 235 }}>
         Support their learning with the right practice and resources.
       </Typography>
-      <Box sx={{ position: 'absolute', width: 70, height: 70, borderRadius: '50%', bgcolor: '#ffe59b', right: 36, bottom: 84 }} />
-      <Box sx={{ position: 'absolute', width: 230, height: 150, bgcolor: '#bad7f7', transform: 'rotate(36deg)', right: -65, bottom: -92, borderRadius: 5 }} />
-      <Box sx={{ position: 'absolute', width: 190, height: 130, bgcolor: '#82b8ee', transform: 'rotate(40deg)', right: 55, bottom: -90, borderRadius: 5 }} />
-      <Stack spacing={0.35} sx={{ position: 'absolute', right: 23, bottom: 18, width: 150 }}>
-        {['#2984f3', '#35a66d', '#f6b63f'].map((color, index) => (
-          <Box key={color} sx={{ height: 22, borderRadius: 1, bgcolor: color, transform: `translateX(${index * -8}px)` }} />
-        ))}
-      </Stack>
     </Box>
   );
 }
@@ -269,7 +276,7 @@ export default function LearnerLanding({
             </Stack>
 
             <Stack spacing={2.1} sx={{ mt: 4 }}>
-              {learners.map((learner, index) => (
+              {learners.map((learner) => (
                 <Paper
                   key={learner.id}
                   variant="outlined"
@@ -287,9 +294,7 @@ export default function LearnerLanding({
                     boxShadow: '0 8px 24px rgba(45, 75, 132, 0.055)',
                   }}
                 >
-                  <Avatar sx={{ width: 68, height: 68, bgcolor: index % 2 === 0 ? '#ffd2df' : '#cfe7fb', color: '#0b1f5e', fontWeight: 800, fontSize: 24 }}>
-                    {learner.displayName.slice(0, 1).toUpperCase()}
-                  </Avatar>
+                  <Avatar src={learnerAvatarOne} alt="" sx={{ width: 68, height: 68, bgcolor: '#ffd2df' }} />
                   <Box sx={{ minWidth: 0 }}>
                     <Typography sx={{ color: '#0b1f5e', fontWeight: 800, fontSize: '1.25rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {learner.displayName}
@@ -358,12 +363,12 @@ export default function LearnerLanding({
             alignItems: 'center',
             position: 'relative',
             overflow: 'hidden',
-            background: 'linear-gradient(100deg, #edf5ff 0%, #eef6ff 55%, #deebfb 100%)',
+            bgcolor: '#edf5ff',
           }}
         >
-          <Box sx={{ position: 'absolute', width: 390, height: 260, bgcolor: '#b7d4f6', transform: 'rotate(41deg)', right: -110, bottom: -205, borderRadius: 6 }} />
-          <Box sx={{ position: 'absolute', width: 300, height: 220, bgcolor: '#90bced', transform: 'rotate(42deg)', right: 130, bottom: -190, borderRadius: 6 }} />
-          <Typography sx={{ position: 'relative', color: '#0b1f5e', fontWeight: 800, fontSize: { xs: '1.35rem', md: '1.65rem' }, lineHeight: 1.35, maxWidth: 560 }}>
+          <Box component="img" src={parentHomeLandscape} alt="" aria-hidden="true" sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 58%', opacity: 0.72 }} />
+          <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(237,245,255,.98) 0%, rgba(237,245,255,.88) 48%, rgba(237,245,255,.28) 100%)' }} />
+          <Typography sx={{ position: 'relative', zIndex: 1, color: '#0b1f5e', fontWeight: 800, fontSize: { xs: '1.35rem', md: '1.65rem' }, lineHeight: 1.35, maxWidth: 560 }}>
             Every step they take today<br />opens up new possibilities tomorrow.
           </Typography>
         </Box>
