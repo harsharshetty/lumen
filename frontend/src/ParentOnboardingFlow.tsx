@@ -21,6 +21,7 @@ type ParentOnboardingFlowProps = {
   onRetryProfile: () => void;
   onCreateLearner: (displayName: string) => Promise<LearnerSummary>;
   onSaveCurricula: (learnerId: string, selectedIds: string[]) => Promise<void>;
+  onLogout: () => Promise<void>;
 };
 
 export default function ParentOnboardingFlow({
@@ -35,6 +36,7 @@ export default function ParentOnboardingFlow({
   onRetryProfile,
   onCreateLearner,
   onSaveCurricula,
+  onLogout,
 }: ParentOnboardingFlowProps) {
   const [screen, setScreen] = useState<Screen>('learners');
   const [activeLearner, setActiveLearner] = useState<LearnerSummary | null>(null);
@@ -111,6 +113,7 @@ export default function ParentOnboardingFlow({
         setActiveLearner(learner);
         setScreen('profile');
       }}
+      onLogout={onLogout}
     />
   );
 }
