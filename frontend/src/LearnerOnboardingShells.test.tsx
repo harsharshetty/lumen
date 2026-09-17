@@ -13,11 +13,16 @@ afterEach(() => {
   cleanup();
 });
 
-function renderLanding(state: 'loading' | 'error' | 'forbidden' | 'ready', items?: LearnerSummary[]) {
+function renderLanding(
+  state: 'loading' | 'error' | 'forbidden' | 'ready',
+  items?: LearnerSummary[],
+  onLogout = vi.fn(async () => undefined),
+) {
   const callbacks = {
     onRetry: vi.fn(),
     onAddLearner: vi.fn(),
     onOpenLearner: vi.fn(),
+    onLogout,
   };
 
   render(
@@ -82,6 +87,63 @@ describe('LearnerLanding', () => {
     const openButtons = screen.getAllByRole('button', { name: 'Open' });
     fireEvent.click(openButtons[1]);
     expect(onOpenLearner).toHaveBeenCalledWith(learners[1]);
+  });
+
+  it('makes side and top navigation interactive without inventing unavailable product content', () => {
+    renderLanding('ready', learners);
+
+    const learnButtons = screen.getAllByRole('button', { name: 'Learn' });
+    fireEvent.click(learnButtons[0]);
+    expect(screen.getByRole('heading', { name: 'Learn' })).toBeInTheDocument();
+    expect(screen.getByText(/This section is not available yet/)).toBeInTheDocument();
+    expect(learnButtons[0]).toHaveAttribute('aria-current', 'page');
+
+    const homeButtons = screen.getAllByRole('button', { name: 'Home' });
+    fireEvent.click(homeButtons[1]);
+    expect(screen.getByRole('heading', { name: 'Learners' })).toBeInTheDocument();
+    expect(homeButtons[1]).toHaveAttribute('aria-current', 'page');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
+    expect(screen.getByRole('heading', { name: 'Settings' })).toBeInTheDocument();
+  });
+
+  it('opens the parent profile menu and logs out', async () => {
+    let finishLogout: (() => void) | undefined;
+    const onLogout = vi.fn(() => new Promise<void>((resolve) => { finishLogout = resolve; }));
+    renderLanding('ready', learners, onLogout);
+
+    fireEvent.click(screen.getByRole('button', { name: /Parent/ }));
+    expect(screen.getByText('Parent profile')).toBeInTheDocument();
+    expect(screen.getByText('Signed in with Google')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Log out' }));
+    expect(onLogout).toHaveBeenCalledOnce();
+    expect(screen.getByRole('menuitem', { name: 'Logging out…' })).toBeDisabled();
+
+    finishLogout?.();
+    await waitFor(() => expect(onLogout).toHaveBeenCalledOnce());
+  });
+
+  it('keeps the parent signed in and surfaces a recoverable logout failure', async () => {
+    const onLogout = vi.fn().mockRejectedValue(new Error('network'));
+    renderLanding('ready', learners, onLogout);
+
+    fireEvent.click(screen.getByRole('button', { name: /Parent/ }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Log out' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent("We couldn't log you out. Please try again.");
+    expect(screen.getByRole('heading', { name: 'Learners' })).toBeInTheDocument();
+  });
+
+  it('closes the parent profile menu without logging out', async () => {
+    const { onLogout } = renderLanding('ready', learners);
+
+    fireEvent.click(screen.getByRole('button', { name: /Parent/ }));
+    expect(screen.getByText('Parent profile')).toBeInTheDocument();
+    fireEvent.keyDown(document, { key: 'Escape' });
+
+    await waitFor(() => expect(screen.queryByText('Parent profile')).not.toBeInTheDocument());
+    expect(onLogout).not.toHaveBeenCalled();
   });
 });
 
