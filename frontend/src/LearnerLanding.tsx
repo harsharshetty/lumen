@@ -4,15 +4,20 @@ import {
   Box,
   Button,
   CircularProgress,
+  Divider,
+  Menu,
+  MenuItem,
   Paper,
   Stack,
   Typography,
 } from '@mui/material';
-import type { ReactNode } from 'react';
+import { useState, type MouseEvent, type ReactNode } from 'react';
 import type { LearnerSummary } from './learnerTypes';
 
 const learnerAvatarSheet = new URL('./assets/frozen/learner-avatars-approved.png', import.meta.url).href;
 const parentHomeArtwork = new URL('./assets/frozen/parent-home-approved.png', import.meta.url).href;
+
+type NavSection = 'Home' | 'Learn' | 'Progress' | 'Resources' | 'Settings';
 
 type Props = {
   state: 'loading' | 'error' | 'forbidden' | 'ready';
@@ -20,6 +25,7 @@ type Props = {
   onRetry: () => void;
   onAddLearner: () => void;
   onOpenLearner: (learner: LearnerSummary) => void;
+  onLogout: () => Promise<void>;
 };
 
 const visuallyHidden = {
@@ -43,29 +49,64 @@ function LumenLogo() {
   );
 }
 
-function NavItem({ icon, label, active = false }: { icon: string; label: string; active?: boolean }) {
+function NavItem({ icon, label, active, onSelect }: { icon: string; label: NavSection; active: boolean; onSelect: (section: NavSection) => void }) {
   return (
-    <Stack
-      direction="row"
-      spacing={1.7}
-      alignItems="center"
-      aria-disabled={!active}
+    <Button
+      onClick={() => onSelect(label)}
+      aria-current={active ? 'page' : undefined}
+      startIcon={<Typography aria-hidden="true" sx={{ fontSize: 23, width: 28, textAlign: 'center' }}>{icon}</Typography>}
       sx={{
         minHeight: 58,
         px: 2.2,
         borderRadius: 2.5,
+        justifyContent: 'flex-start',
+        gap: 0.7,
         color: active ? '#1677ff' : '#1f376d',
         bgcolor: active ? '#e8f2ff' : 'transparent',
         fontWeight: active ? 800 : 600,
+        textTransform: 'none',
+        fontSize: '1rem',
+        '&:hover': { bgcolor: active ? '#e8f2ff' : '#f4f7fc' },
       }}
     >
-      <Typography aria-hidden="true" sx={{ fontSize: 23, width: 28, textAlign: 'center' }}>{icon}</Typography>
-      <Typography sx={{ fontSize: '1rem', fontWeight: 'inherit' }}>{label}</Typography>
-    </Stack>
+      {label}
+    </Button>
   );
 }
 
-function ParentShell({ children }: { children: ReactNode }) {
+function UnavailableSection({ section }: { section: Exclude<NavSection, 'Home'> }) {
+  return (
+    <Box sx={{ p: { xs: 3, sm: 5, lg: 6 } }}>
+      <Paper variant="outlined" sx={{ maxWidth: 720, p: { xs: 3, sm: 4 }, borderRadius: 3, borderColor: '#e0e7f3' }}>
+        <Typography component="h1" sx={{ color: '#0b1f5e', fontSize: { xs: '1.8rem', sm: '2.2rem' }, fontWeight: 800 }}>{section}</Typography>
+        <Typography sx={{ mt: 1.2, color: '#62719a', lineHeight: 1.65 }}>
+          This section is not available yet. The navigation is active so you can move around the parent experience without dead controls, but Lumen will not show fabricated content before the underlying capability exists.
+        </Typography>
+      </Paper>
+    </Box>
+  );
+}
+
+function ParentShell({ children, onLogout }: { children: ReactNode; onLogout: () => Promise<void> }) {
+  const [activeSection, setActiveSection] = useState<NavSection>('Home');
+  const [accountAnchor, setAccountAnchor] = useState<HTMLElement | null>(null);
+  const [logoutBusy, setLogoutBusy] = useState(false);
+  const [logoutError, setLogoutError] = useState(false);
+
+  const selectSection = (section: NavSection) => setActiveSection(section);
+  const openAccount = (event: MouseEvent<HTMLElement>) => setAccountAnchor(event.currentTarget);
+  const closeAccount = () => setAccountAnchor(null);
+  const logout = async () => {
+    setLogoutBusy(true);
+    setLogoutError(false);
+    try {
+      await onLogout();
+    } catch {
+      setLogoutBusy(false);
+      setLogoutError(true);
+    }
+  };
+
   return (
     <Box component="main" sx={{ minHeight: '100vh', bgcolor: '#f7faff', color: '#0b1f3a' }}>
       <Box sx={{ minHeight: '100vh', display: 'grid', gridTemplateColumns: { xs: '1fr', md: '264px minmax(0, 1fr)' } }}>
@@ -83,11 +124,11 @@ function ParentShell({ children }: { children: ReactNode }) {
         >
           <Box sx={{ px: 1.5, pt: 0.3, pb: 4.8 }}><LumenLogo /></Box>
           <Stack spacing={1.1}>
-            <NavItem icon="⌂" label="Home" active />
-            <NavItem icon="▤" label="Learn" />
-            <NavItem icon="▥" label="Progress" />
-            <NavItem icon="▧" label="Resources" />
-            <NavItem icon="⚙" label="Settings" />
+            <NavItem icon="⌂" label="Home" active={activeSection === 'Home'} onSelect={selectSection} />
+            <NavItem icon="▤" label="Learn" active={activeSection === 'Learn'} onSelect={selectSection} />
+            <NavItem icon="▥" label="Progress" active={activeSection === 'Progress'} onSelect={selectSection} />
+            <NavItem icon="▧" label="Resources" active={activeSection === 'Resources'} onSelect={selectSection} />
+            <NavItem icon="⚙" label="Settings" active={activeSection === 'Settings'} onSelect={selectSection} />
           </Stack>
           <Box
             sx={{
@@ -133,22 +174,51 @@ function ParentShell({ children }: { children: ReactNode }) {
               borderBottom: '1px solid #e8eef8',
             }}
           >
-            <Stack direction="row" spacing={{ xs: 2, md: 5 }} alignItems="center" sx={{ display: { xs: 'none', sm: 'flex' } }}>
-              {['Home', 'Learn', 'Progress', 'Resources'].map((item) => (
-                <Typography key={item} sx={{ color: item === 'Home' ? '#1677ff' : '#1f376d', fontWeight: item === 'Home' ? 800 : 600, fontSize: '0.96rem' }}>
+            <Stack direction="row" spacing={{ xs: 2, md: 4 }} alignItems="center" sx={{ display: { xs: 'none', sm: 'flex' } }}>
+              {(['Home', 'Learn', 'Progress', 'Resources'] as NavSection[]).map((item) => (
+                <Button
+                  key={item}
+                  onClick={() => selectSection(item)}
+                  aria-current={activeSection === item ? 'page' : undefined}
+                  sx={{
+                    minWidth: 0,
+                    px: 0.5,
+                    color: activeSection === item ? '#1677ff' : '#1f376d',
+                    fontWeight: activeSection === item ? 800 : 600,
+                    fontSize: '0.96rem',
+                    textTransform: 'none',
+                  }}
+                >
                   {item}
-                </Typography>
+                </Button>
               ))}
             </Stack>
             <Box sx={{ display: { xs: 'block', sm: 'none' } }}><LumenLogo /></Box>
-            <Stack direction="row" spacing={1.4} alignItems="center">
-              <Typography aria-hidden="true" sx={{ fontSize: 22, color: '#48679c' }}>♢</Typography>
-              <Avatar sx={{ width: 40, height: 40, bgcolor: '#5d4ddb', fontSize: 16 }}>P</Avatar>
-              <Typography sx={{ color: '#0b1f5e', fontWeight: 700, display: { xs: 'none', sm: 'block' } }}>Parent</Typography>
-              <Typography aria-hidden="true" sx={{ color: '#35598d' }}>⌄</Typography>
-            </Stack>
+            <Button
+              onClick={openAccount}
+              aria-haspopup="menu"
+              aria-expanded={Boolean(accountAnchor) ? 'true' : undefined}
+              aria-controls={accountAnchor ? 'parent-account-menu' : undefined}
+              sx={{ minWidth: 0, px: 1, textTransform: 'none', borderRadius: 2.5 }}
+            >
+              <Stack direction="row" spacing={1.4} alignItems="center">
+                <Typography aria-hidden="true" sx={{ fontSize: 22, color: '#48679c' }}>♢</Typography>
+                <Avatar sx={{ width: 40, height: 40, bgcolor: '#5d4ddb', fontSize: 16 }}>P</Avatar>
+                <Typography sx={{ color: '#0b1f5e', fontWeight: 700, display: { xs: 'none', sm: 'block' } }}>Parent</Typography>
+                <Typography aria-hidden="true" sx={{ color: '#35598d' }}>⌄</Typography>
+              </Stack>
+            </Button>
+            <Menu id="parent-account-menu" anchorEl={accountAnchor} open={Boolean(accountAnchor)} onClose={closeAccount}>
+              <Box sx={{ px: 2, py: 1.2, minWidth: 220 }}>
+                <Typography sx={{ color: '#0b1f5e', fontWeight: 800 }}>Parent profile</Typography>
+                <Typography variant="body2" sx={{ mt: 0.3, color: '#62719a' }}>Signed in with Google</Typography>
+              </Box>
+              <Divider />
+              <MenuItem onClick={logout} disabled={logoutBusy}>{logoutBusy ? 'Logging out…' : 'Log out'}</MenuItem>
+            </Menu>
           </Box>
-          {children}
+          {logoutError && <Alert severity="error" sx={{ borderRadius: 0 }}>We couldn't log you out. Please try again.</Alert>}
+          {activeSection === 'Home' ? children : <UnavailableSection section={activeSection} />}
         </Box>
       </Box>
     </Box>
@@ -220,10 +290,11 @@ export default function LearnerLanding({
   onRetry,
   onAddLearner,
   onOpenLearner,
+  onLogout,
 }: Props) {
   if (state === 'loading') {
     return (
-      <ParentShell>
+      <ParentShell onLogout={onLogout}>
         <Stack spacing={2} alignItems="flex-start" aria-live="polite" sx={{ p: { xs: 4, md: 8 } }}>
           <CircularProgress aria-label="Loading learners" />
           <Typography>Loading your learners…</Typography>
@@ -234,7 +305,7 @@ export default function LearnerLanding({
 
   if (state === 'error') {
     return (
-      <ParentShell>
+      <ParentShell onLogout={onLogout}>
         <Box sx={{ p: { xs: 4, md: 8 } }}>
           <Alert severity="error" action={<Button color="inherit" onClick={onRetry}>Try again</Button>}>
             We couldn't load your learners. Try again.
@@ -246,7 +317,7 @@ export default function LearnerLanding({
 
   if (state === 'forbidden') {
     return (
-      <ParentShell>
+      <ParentShell onLogout={onLogout}>
         <Box sx={{ p: { xs: 4, md: 8 } }}>
           <Alert severity="warning">You don't have access to this learner.</Alert>
         </Box>
@@ -255,11 +326,11 @@ export default function LearnerLanding({
   }
 
   if (learners.length === 0) {
-    return <ParentShell><EmptyState onAddLearner={onAddLearner} /></ParentShell>;
+    return <ParentShell onLogout={onLogout}><EmptyState onAddLearner={onAddLearner} /></ParentShell>;
   }
 
   return (
-    <ParentShell>
+    <ParentShell onLogout={onLogout}>
       <Box sx={{ px: { xs: 3, sm: 5, lg: 5.5 }, py: { xs: 4, lg: 4.5 } }}>
         <Typography component="h2" sx={visuallyHidden}>Learners</Typography>
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', xl: 'minmax(0, 1fr) 360px' }, gap: 3.5, alignItems: 'start' }}>
