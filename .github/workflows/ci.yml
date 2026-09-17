@@ -74,11 +74,16 @@ jobs:
         run: npm run test:coverage
       - name: Build frontend
         run: npm run build
-      - name: Verify frozen-screen assets are bundled
+      - name: Verify authoritative frozen-screen sources and production assets
         run: |
-          for asset in signin-approved.webp parent-home-approved.webp learner-avatar-1-approved.webp learner-avatar-2-approved.webp learner-avatar-3-approved.webp; do
-            if [ ! -s "dist/assets/${asset}" ]; then
-              echo "Approved frozen-screen asset ${asset} is missing from the production build" >&2
+          printf '%s  %s\n' \
+            'e3ebb11145b172714e5549272213720020cd72baba5a25843b6b059bc19683c6' 'src/assets/frozen/signin-hero-approved.png' \
+            '1678ae7f469d0530e87c500943b6b868190db6fb7dd58c2fceadcaf06a7bbe3d' 'src/assets/frozen/parent-home-approved.png' \
+            '44321821253693fa371da4f5eefab75a8444f7cfa35cd98775808c22e594583b' 'src/assets/frozen/learner-avatars-approved.png' \
+            | sha256sum --check --strict
+          for asset in signin-hero-approved parent-home-approved learner-avatars-approved; do
+            if ! find dist/assets -type f -name "${asset}-*.png" -size +0c | grep --quiet .; then
+              echo "Authoritative frozen-screen asset ${asset} is missing from the production build" >&2
               exit 1
             fi
           done

@@ -9,9 +9,10 @@ import {
   Typography,
 } from '@mui/material';
 import type { ReactNode } from 'react';
-import parentHomeLandscape from './assets/parent-home-landscape-books.svg';
-import learnerAvatarOne from './assets/learner-avatar-1.svg';
 import type { LearnerSummary } from './learnerTypes';
+
+const learnerAvatarSheet = new URL('./assets/frozen/learner-avatars-approved.png', import.meta.url).href;
+const parentHomeArtwork = new URL('./assets/frozen/parent-home-approved.png', import.meta.url).href;
 
 type Props = {
   state: 'loading' | 'error' | 'forbidden' | 'ready';
@@ -23,8 +24,8 @@ type Props = {
 
 const visuallyHidden = {
   position: 'absolute',
-  width: 1,
-  height: 1,
+  width: '1px',
+  height: '1px',
   p: 0,
   m: -1,
   overflow: 'hidden',
@@ -111,10 +112,10 @@ function ParentShell({ children }: { children: ReactNode }) {
             <Box sx={{ position: 'relative', zIndex: 1, mt: 1.5, width: 56, height: 3, borderRadius: 999, bgcolor: '#1677ff', transform: 'rotate(-7deg)' }} />
             <Box
               component="img"
-              src={parentHomeLandscape}
+              src={parentHomeArtwork}
               alt=""
               aria-hidden="true"
-              sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center bottom', opacity: 0.42 }}
+              sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', objectPosition: '100% 100%' }}
             />
           </Box>
         </Box>
@@ -168,10 +169,10 @@ function MotivationCard() {
     >
       <Box
         component="img"
-        src={parentHomeLandscape}
+        src={parentHomeArtwork}
         alt=""
         aria-hidden="true"
-        sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center bottom' }}
+        sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', objectPosition: '100% 100%' }}
       />
       <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(237,245,255,.97) 0%, rgba(237,245,255,.84) 48%, rgba(237,245,255,.12) 100%)' }} />
       <Typography sx={{ position: 'relative', zIndex: 1, color: '#0b1f5e', fontWeight: 800, fontSize: '1.45rem', lineHeight: 1.25, maxWidth: 250 }}>
@@ -276,7 +277,7 @@ export default function LearnerLanding({
             </Stack>
 
             <Stack spacing={2.1} sx={{ mt: 4 }}>
-              {learners.map((learner) => (
+              {learners.map((learner, index) => (
                 <Paper
                   key={learner.id}
                   variant="outlined"
@@ -294,7 +295,22 @@ export default function LearnerLanding({
                     boxShadow: '0 8px 24px rgba(45, 75, 132, 0.055)',
                   }}
                 >
-                  <Avatar src={learnerAvatarOne} alt="" sx={{ width: 68, height: 68, bgcolor: '#ffd2df' }} />
+                  <Box
+                    data-testid="learner-avatar"
+                    data-avatar-index={index % 3}
+                    aria-hidden="true"
+                    sx={{
+                      width: 68,
+                      height: 68,
+                      flexShrink: 0,
+                      borderRadius: '50%',
+                      bgcolor: '#ffd2df',
+                      backgroundImage: `url(${learnerAvatarSheet})`,
+                      backgroundSize: '300% 100%',
+                      backgroundPosition: `${(index % 3) * 50}% center`,
+                      backgroundRepeat: 'no-repeat',
+                    }}
+                  />
                   <Box sx={{ minWidth: 0 }}>
                     <Typography sx={{ color: '#0b1f5e', fontWeight: 800, fontSize: '1.25rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {learner.displayName}
@@ -366,7 +382,7 @@ export default function LearnerLanding({
             bgcolor: '#edf5ff',
           }}
         >
-          <Box component="img" src={parentHomeLandscape} alt="" aria-hidden="true" sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 58%', opacity: 0.72 }} />
+          <Box component="img" data-testid="parent-home-artwork" src={parentHomeArtwork} alt="" aria-hidden="true" sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', objectPosition: '100% 100%' }} />
           <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(237,245,255,.98) 0%, rgba(237,245,255,.88) 48%, rgba(237,245,255,.28) 100%)' }} />
           <Typography sx={{ position: 'relative', zIndex: 1, color: '#0b1f5e', fontWeight: 800, fontSize: { xs: '1.35rem', md: '1.65rem' }, lineHeight: 1.35, maxWidth: 560 }}>
             Every step they take today<br />opens up new possibilities tomorrow.
