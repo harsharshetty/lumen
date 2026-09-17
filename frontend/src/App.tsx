@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import ParentOnboardingFlow from './ParentOnboardingFlow';
 import type { CurriculumChoice } from './LearnerCurriculumSelection';
 import type { LearnerSummary } from './learnerTypes';
-import signinArtwork from './assets/signin-left-reference.jpg';
+import signinArtwork from './assets/signin-left-reference.svg';
 
 type FlowState = 'loading' | 'error' | 'forbidden' | 'ready';
 type LearnerViewState = FlowState | 'unauthenticated';
@@ -63,15 +63,8 @@ function Capability({ icon, title, copy, tint }: { icon: string; title: string; 
 
 function SignInArtwork() {
   return (
-    <Box data-testid="signin-artwork-panel" sx={{ position: 'relative', width: '100%', height: { xs: 'auto', md: '100%' }, aspectRatio: { xs: '1122 / 1402', md: 'auto' }, minWidth: 0, overflow: 'hidden', bgcolor: '#102451' }}>
+    <Box data-testid="signin-artwork-panel" sx={{ position: 'relative', width: '100%', height: { xs: 'auto', md: '100%' }, aspectRatio: { xs: '5 / 6', md: 'auto' }, minWidth: 0, overflow: 'hidden', bgcolor: '#102451' }}>
       <Box component="img" src={signinArtwork} alt="Lumen — bright learning for brighter tomorrows" sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', display: 'block', objectFit: 'cover' }} />
-      <Box aria-hidden="true" sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(7,26,69,.78) 0%, rgba(7,26,69,.28) 41%, rgba(7,26,69,0) 72%)' }} />
-      <Stack aria-hidden="true" alignItems="center" textAlign="center" sx={{ position: 'absolute', top: { xs: '5.5%', md: '5%' }, left: '8%', right: '8%', color: '#fff' }}>
-        <Typography sx={{ fontSize: { xs: '1.7rem', md: '2.3rem' }, fontWeight: 700, lineHeight: 1 }}>✦</Typography>
-        <Typography sx={{ mt: 1.5, fontSize: { xs: '2rem', md: '2.55rem' }, fontWeight: 800, letterSpacing: '-0.02em' }}>Lumen</Typography>
-        <Typography sx={{ mt: { xs: 2.2, md: 3 }, fontSize: { xs: '1.12rem', md: '1.45rem' }, fontWeight: 800, lineHeight: 1.28 }}>Bright learning for brighter<br />tomorrows</Typography>
-        <Typography sx={{ mt: { xs: 2.2, md: 2.6 }, fontSize: { xs: '0.78rem', md: '0.96rem' }, fontWeight: 500, color: '#e7edff', lineHeight: 1.55 }}>Personalised practice. Real progress.<br />For every curious mind.</Typography>
-      </Stack>
     </Box>
   );
 }
