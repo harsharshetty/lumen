@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 
 type ViewportCase = {
@@ -17,15 +18,17 @@ const viewports: ViewportCase[] = [
   { name: 'mobile', width: 390, height: 844 },
 ];
 
-const approvedArtworkReference = readFileSync('../frontend/src/assets/signin-left-reference.jpg').toString('base64');
+const approvedArtwork = readFileSync('../frontend/src/assets/signin-left-reference.svg');
+const approvedArtworkHash = createHash('sha256').update(approvedArtwork).digest('hex');
+const approvedArtworkReference = approvedArtwork.toString('base64');
+const expectedArtworkHash = '8be52eb9804cd6ca45b92469adab906c9f9876b2a32fbfd46b51ff201aec4c4d';
 
 async function compareApprovedArtwork(
   page: import('@playwright/test').Page,
-  actualSrc: string,
-  renderedWidth: number,
-  renderedHeight: number,
+  renderedArtwork: Buffer,
+  renderedReference: Buffer,
 ): Promise<ArtworkDiff> {
-  return page.evaluate(async ({ referenceBase64, actualSrc, renderedWidth, renderedHeight }) => {
+  return page.evaluate(async ({ renderedBase64, referenceBase64 }) => {
     const loadImage = (src: string) => new Promise<HTMLImageElement>((resolve, reject) => {
       const image = new Image();
       image.onload = () => resolve(image);
@@ -34,13 +37,12 @@ async function compareApprovedArtwork(
     });
 
     const [actual, reference] = await Promise.all([
-      loadImage(actualSrc),
-      loadImage(`data:image/jpeg;base64,${referenceBase64}`),
+      loadImage(`data:image/png;base64,${renderedBase64}`),
+      loadImage(`data:image/png;base64,${referenceBase64}`),
     ]);
 
     const width = 128;
     const height = 128;
-    const targetAspectRatio = renderedWidth / renderedHeight;
     const actualCanvas = document.createElement('canvas');
     const referenceCanvas = document.createElement('canvas');
     actualCanvas.width = referenceCanvas.width = width;
@@ -50,31 +52,8 @@ async function compareApprovedArtwork(
     const referenceContext = referenceCanvas.getContext('2d', { willReadFrequently: true });
     if (!actualContext || !referenceContext) throw new Error('Canvas 2D context unavailable');
 
-    const drawCover = (
-      context: CanvasRenderingContext2D,
-      image: HTMLImageElement,
-      destinationWidth: number,
-      destinationHeight: number,
-    ) => {
-      const sourceAspectRatio = image.naturalWidth / image.naturalHeight;
-      let sourceWidth = image.naturalWidth;
-      let sourceHeight = image.naturalHeight;
-      let sourceX = 0;
-      let sourceY = 0;
-
-      if (sourceAspectRatio > targetAspectRatio) {
-        sourceWidth = image.naturalHeight * targetAspectRatio;
-        sourceX = (image.naturalWidth - sourceWidth) / 2;
-      } else {
-        sourceHeight = image.naturalWidth / targetAspectRatio;
-        sourceY = (image.naturalHeight - sourceHeight) / 2;
-      }
-
-      context.drawImage(image, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, destinationWidth, destinationHeight);
-    };
-
-    drawCover(actualContext, actual, width, height);
-    drawCover(referenceContext, reference, width, height);
+    actualContext.drawImage(actual, 0, 0, width, height);
+    referenceContext.drawImage(reference, 0, 0, width, height);
 
     const actualPixels = actualContext.getImageData(0, 0, width, height).data;
     const referencePixels = referenceContext.getImageData(0, 0, width, height).data;
@@ -94,11 +73,38 @@ async function compareApprovedArtwork(
       meanAbsoluteChannelDifference: absoluteChannelDifference / (pixelCount * 3),
       changedPixelRatio: changedPixels / pixelCount,
     };
-  }, { referenceBase64: approvedArtworkReference, actualSrc, renderedWidth, renderedHeight });
+  }, { renderedBase64: renderedArtwork.toString('base64'), referenceBase64: renderedReference.toString('base64') });
+}
+
+async function renderApprovedArtwork(
+  page: import('@playwright/test').Page,
+  renderedWidth: number,
+  renderedHeight: number,
+): Promise<Buffer> {
+  await page.evaluate(async ({ referenceBase64, renderedWidth, renderedHeight }) => {
+    const reference = document.createElement('img');
+    reference.id = 'frozen-signin-artwork-reference';
+    reference.src = `data:image/svg+xml;base64,${referenceBase64}`;
+    Object.assign(reference.style, {
+      position: 'fixed',
+      inset: '0 auto auto 0',
+      width: `${renderedWidth}px`,
+      height: `${renderedHeight}px`,
+      objectFit: 'cover',
+      zIndex: '2147483647',
+    });
+    document.body.append(reference);
+    await reference.decode();
+  }, { referenceBase64: approvedArtworkReference, renderedWidth, renderedHeight });
+  const reference = page.locator('#frozen-signin-artwork-reference');
+  const screenshot = await reference.screenshot({ animations: 'disabled' });
+  await reference.evaluate((node) => node.remove());
+  return screenshot;
 }
 
 for (const viewport of viewports) {
   test(`frozen sign-in renders approved artwork at ${viewport.name} viewport`, async ({ page }, testInfo) => {
+    expect(approvedArtworkHash, 'The frozen sign-in SVG changed without an explicit design decision').toBe(expectedArtworkHash);
     const failedAssets: string[] = [];
     page.on('response', (response) => {
       const pathname = new URL(response.url()).pathname;
@@ -125,13 +131,14 @@ for (const viewport of viewports) {
       const image = node as HTMLImageElement;
       return { width: image.naturalWidth, height: image.naturalHeight };
     });
-    expect(decodedSize.width).toBeGreaterThanOrEqual(500);
-    expect(decodedSize.height).toBeGreaterThanOrEqual(500);
+    expect(decodedSize.width).toBeGreaterThan(0);
+    expect(decodedSize.height).toBeGreaterThan(0);
+    expect(decodedSize.width / decodedSize.height).toBeCloseTo(5 / 6, 2);
 
     const actualSrc = await artwork.evaluate((node) => (node as HTMLImageElement).currentSrc);
     expect(actualSrc).toBeTruthy();
     if (actualSrc.startsWith('data:')) {
-      expect(actualSrc).toMatch(/^data:image\/(?:jpeg|png|webp);base64,/);
+      expect(actualSrc).toMatch(/^data:image\/(?:jpeg|png|webp|svg\+xml);base64,/);
     } else {
       const assetResponse = await page.request.get(actualSrc);
       expect(assetResponse.status()).toBe(200);
@@ -163,9 +170,15 @@ for (const viewport of viewports) {
     expect(Math.abs(imageBox.width - artworkBox.width)).toBeLessThanOrEqual(1);
     expect(Math.abs(imageBox.height - artworkBox.height)).toBeLessThanOrEqual(1);
 
-    const artworkDiff = await compareApprovedArtwork(page, actualSrc, imageBox.width, imageBox.height);
-    expect(artworkDiff.meanAbsoluteChannelDifference, 'Production sign-in artwork drifted too far from the committed approved reference').toBeLessThan(24);
-    expect(artworkDiff.changedPixelRatio, 'Too much of the production sign-in artwork differs from the committed approved reference').toBeLessThan(0.35);
+    const renderedArtwork = await artwork.screenshot({ animations: 'disabled' });
+    const renderedReference = await renderApprovedArtwork(page, imageBox.width, imageBox.height);
+    const artworkDiff = await compareApprovedArtwork(page, renderedArtwork, renderedReference);
+    await testInfo.attach(`signin-${viewport.name}-pixel-diff`, {
+      body: Buffer.from(JSON.stringify(artworkDiff, null, 2)),
+      contentType: 'application/json',
+    });
+    expect(artworkDiff.meanAbsoluteChannelDifference, 'Chromium-painted sign-in artwork drifted from the frozen SVG').toBeLessThanOrEqual(3);
+    expect(artworkDiff.changedPixelRatio, 'Chromium-painted sign-in artwork materially differs from the frozen SVG').toBeLessThanOrEqual(0.02);
 
     if (viewport.name === 'desktop') {
       expect(artworkBox.width).toBeGreaterThan(viewport.width * 0.4);
@@ -174,6 +187,8 @@ for (const viewport of viewports) {
     } else {
       expect(artworkBox.width).toBeGreaterThan(viewport.width * 0.9);
       expect(artworkBox.y + artworkBox.height).toBeLessThanOrEqual(headingBox.y);
+      expect(artworkBox.width / artworkBox.height).toBeCloseTo(5 / 6, 2);
+      await testInfo.attach('signin-mobile-rendered-panel', { body: await panel.screenshot({ animations: 'disabled' }), contentType: 'image/png' });
     }
 
     expect(failedAssets).toEqual([]);

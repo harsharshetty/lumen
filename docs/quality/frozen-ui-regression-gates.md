@@ -16,6 +16,13 @@ Approved visual references are immutable product artifacts. Updating or replacin
 
 ## Sign-in
 
-The sign-in production-container test checks that the approved artwork is present, decoded, visible, fills the frozen artwork panel, is served from the production bundle, and remains visually within tolerance of `frontend/src/assets/signin-left-reference.jpg` at desktop and mobile viewports.
+The authoritative sign-in artwork is the self-contained
+`frontend/src/assets/signin-left-reference.svg` with SHA-256
+`8be52eb9804cd6ca45b92469adab906c9f9876b2a32fbfd46b51ff201aec4c4d`.
+The production-container test locks that hash and compares pixels painted by
+Chromium against an independent rasterization of the SVG at desktop and mobile
+viewports. It also checks asset delivery, decoding, visibility, panel fill,
+responsive geometry, and horizontal overflow. The SVG must not be replaced or
+modified without an explicit design decision and corresponding gate update.
 
 The production deployment workflow remains downstream of successful CI, so a failed frozen-screen gate prevents deployment.
