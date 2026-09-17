@@ -16,6 +16,7 @@ function renderFlow(options?: {
 }) {
   const onCreateLearner = vi.fn(async (displayName: string) => ({ id: 'new-learner', displayName }));
   const onSaveCurricula = vi.fn(async () => undefined);
+  const onLogout = vi.fn(async () => undefined);
 
   render(
     <ParentOnboardingFlow
@@ -30,10 +31,11 @@ function renderFlow(options?: {
       onRetryProfile={vi.fn()}
       onCreateLearner={onCreateLearner}
       onSaveCurricula={onSaveCurricula}
+      onLogout={onLogout}
     />,
   );
 
-  return { onCreateLearner, onSaveCurricula };
+  return { onCreateLearner, onSaveCurricula, onLogout };
 }
 
 afterEach(() => cleanup());
