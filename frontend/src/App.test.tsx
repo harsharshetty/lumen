@@ -24,9 +24,18 @@ describe('App', () => {
     await waitFor(() => expect(screen.getByTestId('flow-state')).toHaveTextContent('ready:ready:ready')); expect(latestProps.learners).toEqual([]); expect(latestProps.curricula).toEqual([]); expect(latestProps.selectedCurriculumIdsByLearner).toEqual({});
   });
 
-  it('shows the frozen branded sign-in entry when any bootstrap API reports unauthenticated', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(jsonResponse([])).mockResolvedValueOnce(emptyResponse(401)).mockResolvedValueOnce(jsonResponse({ displayName: 'Harsha' })); render(<App />);
-    expect(await screen.findByRole('heading', { name: 'Welcome back' })).toBeInTheDocument(); expect(screen.getByRole('link', { name: 'Continue with Google' })).toHaveAttribute('href', '/oauth2/authorization/google'); expect(screen.getByText('Personalised practice')).toBeInTheDocument(); expect(screen.getByText('Real progress')).toBeInTheDocument(); expect(screen.getByText('Curriculum choices')).toBeInTheDocument(); expect(screen.queryByText('or', { exact: true })).not.toBeInTheDocument(); expect(screen.queryByTestId('flow-state')).not.toBeInTheDocument();
+  it.each([0, 1, 2])('shows sign-in when bootstrap request %s reports unauthenticated', async (unauthenticatedIndex) => {
+    const responses = [jsonResponse([]), jsonResponse([]), jsonResponse({ displayName: 'Harsha' })];
+    responses[unauthenticatedIndex] = emptyResponse(401);
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(responses[0]).mockResolvedValueOnce(responses[1]).mockResolvedValueOnce(responses[2]);
+    render(<App />);
+    expect(await screen.findByRole('heading', { name: 'Welcome back' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Continue with Google' })).toHaveAttribute('href', '/oauth2/authorization/google');
+    expect(screen.getByText('Personalised practice')).toBeInTheDocument();
+    expect(screen.getByText('Real progress')).toBeInTheDocument();
+    expect(screen.getByText('Curriculum choices')).toBeInTheDocument();
+    expect(screen.queryByText('or', { exact: true })).not.toBeInTheDocument();
+    expect(screen.queryByTestId('flow-state')).not.toBeInTheDocument();
   });
 
   it('keeps learners available when curriculum catalog loading fails', async () => {
@@ -79,6 +88,7 @@ describe('App', () => {
     await waitFor(() => expect(screen.getByTestId('flow-state')).toHaveTextContent('ready:ready:ready'));
     await expect(latestProps.onLogout()).rejects.toThrow('Logout failed: 500');
     expect(fetchMock.mock.calls[3][0]).toBe('/logout');
+    expect((fetchMock.mock.calls[3][1]?.headers as Headers).has('X-XSRF-TOKEN')).toBe(false);
     expect(screen.getByTestId('flow-state')).toHaveTextContent('ready:ready:ready');
   });
 
