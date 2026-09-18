@@ -18,6 +18,9 @@ function renderLanding(state: 'loading' | 'error' | 'forbidden' | 'ready', items
     onRetry: vi.fn(),
     onAddLearner: vi.fn(),
     onOpenLearner: vi.fn(),
+    onHome: vi.fn(),
+    onLogout: vi.fn(async () => undefined),
+    parentDisplayName: 'Harsha Shetty',
   };
 
   render(
@@ -64,6 +67,31 @@ describe('LearnerLanding', () => {
     expect(screen.queryByText("Today's focus")).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Add learner' }));
     expect(onAddLearner).toHaveBeenCalledOnce();
+  });
+
+
+  it('exposes truthful navigation and an accessible parent account menu with logout', async () => {
+    const { onHome, onLogout } = renderLanding('ready', learners);
+
+    const homeButtons = screen.getAllByRole('button', { name: 'Home' });
+    expect(homeButtons).toHaveLength(2);
+    homeButtons.forEach((button) => expect(button).toHaveAttribute('aria-current', 'page'));
+    fireEvent.click(homeButtons[0]);
+    fireEvent.click(homeButtons[1]);
+    expect(onHome).toHaveBeenCalledTimes(2);
+
+    for (const label of ['Learn', 'Progress', 'Resources', 'Settings']) {
+      screen.getAllByRole('button', { name: label }).forEach((button) => expect(button).toBeDisabled());
+    }
+
+    const account = screen.getByRole('button', { name: 'Parent account' });
+    account.focus();
+    expect(account).toHaveFocus();
+    fireEvent.click(account);
+    expect(await screen.findByRole('menu')).toBeInTheDocument();
+    expect(screen.getByText('Harsha Shetty')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Logout' }));
+    await waitFor(() => expect(onLogout).toHaveBeenCalledOnce());
   });
 
   it('shows only real learner profiles without fabricated progress and supports add/open actions', () => {
