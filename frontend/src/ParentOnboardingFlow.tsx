@@ -16,6 +16,8 @@ type ParentOnboardingFlowProps = {
   learners: LearnerSummary[];
   curricula: CurriculumChoice[];
   selectedCurriculumIdsByLearner: Record<string, string[]>;
+  parentDisplayName: string;
+  onLogout: () => Promise<void>;
   onRetryLearners: () => void;
   onRetryCurricula: () => void;
   onRetryProfile: () => void;
@@ -30,6 +32,8 @@ export default function ParentOnboardingFlow({
   learners,
   curricula,
   selectedCurriculumIdsByLearner,
+  parentDisplayName,
+  onLogout,
   onRetryLearners,
   onRetryCurricula,
   onRetryProfile,
@@ -107,6 +111,9 @@ export default function ParentOnboardingFlow({
       learners={learners}
       onRetry={onRetryLearners}
       onAddLearner={() => setScreen('create')}
+      parentDisplayName={parentDisplayName}
+      onLogout={onLogout}
+      onHome={() => setScreen('learners')}
       onOpenLearner={(learner) => {
         setActiveLearner(learner);
         setScreen('profile');
