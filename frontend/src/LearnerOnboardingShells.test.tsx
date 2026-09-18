@@ -69,7 +69,6 @@ describe('LearnerLanding', () => {
     expect(onAddLearner).toHaveBeenCalledOnce();
   });
 
-
   it('exposes truthful navigation and an accessible parent account menu with logout', async () => {
     const { onHome, onLogout } = renderLanding('ready', learners);
 
@@ -89,7 +88,7 @@ describe('LearnerLanding', () => {
     expect(account).toHaveFocus();
     fireEvent.click(account);
     expect(await screen.findByRole('menu')).toBeInTheDocument();
-    expect(screen.getByText('Harsha Shetty')).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: 'Harsha Shetty' })).toBeDisabled();
     fireEvent.click(screen.getByRole('menuitem', { name: 'Logout' }));
     await waitFor(() => expect(onLogout).toHaveBeenCalledOnce());
   });
