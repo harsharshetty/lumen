@@ -4,11 +4,13 @@ import {
   Box,
   Button,
   CircularProgress,
+  Menu,
+  MenuItem,
   Paper,
   Stack,
   Typography,
 } from '@mui/material';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import type { LearnerSummary } from './learnerTypes';
 
 const learnerAvatarSheet = new URL('./assets/frozen/learner-avatars-approved.png', import.meta.url).href;
@@ -20,6 +22,9 @@ type Props = {
   onRetry: () => void;
   onAddLearner: () => void;
   onOpenLearner: (learner: LearnerSummary) => void;
+  parentDisplayName: string;
+  onLogout: () => Promise<void>;
+  onHome: () => void;
 };
 
 const visuallyHidden = {
@@ -43,29 +48,32 @@ function LumenLogo() {
   );
 }
 
-function NavItem({ icon, label, active = false }: { icon: string; label: string; active?: boolean }) {
+function NavItem({ icon, label, active = false, onClick }: { icon: string; label: string; active?: boolean; onClick?: () => void }) {
   return (
-    <Stack
-      direction="row"
-      spacing={1.7}
-      alignItems="center"
-      aria-disabled={!active}
+    <Button
+      disabled={!onClick}
+      onClick={onClick}
+      aria-current={active ? 'page' : undefined}
+      startIcon={<Typography aria-hidden="true" sx={{ fontSize: 23, width: 28, textAlign: 'center' }}>{icon}</Typography>}
       sx={{
         minHeight: 58,
         px: 2.2,
+        justifyContent: 'flex-start',
         borderRadius: 2.5,
         color: active ? '#1677ff' : '#1f376d',
         bgcolor: active ? '#e8f2ff' : 'transparent',
         fontWeight: active ? 800 : 600,
+        textTransform: 'none',
+        '&.Mui-disabled': { color: '#7d8cac' },
       }}
     >
-      <Typography aria-hidden="true" sx={{ fontSize: 23, width: 28, textAlign: 'center' }}>{icon}</Typography>
       <Typography sx={{ fontSize: '1rem', fontWeight: 'inherit' }}>{label}</Typography>
-    </Stack>
+    </Button>
   );
 }
 
-function ParentShell({ children }: { children: ReactNode }) {
+function ParentShell({ children, parentDisplayName, onLogout, onHome }: { children: ReactNode; parentDisplayName: string; onLogout: () => Promise<void>; onHome: () => void }) {
+  const [accountAnchor, setAccountAnchor] = useState<HTMLElement | null>(null);
   return (
     <Box component="main" sx={{ minHeight: '100vh', bgcolor: '#f7faff', color: '#0b1f3a' }}>
       <Box sx={{ minHeight: '100vh', display: 'grid', gridTemplateColumns: { xs: '1fr', md: '264px minmax(0, 1fr)' } }}>
@@ -83,7 +91,7 @@ function ParentShell({ children }: { children: ReactNode }) {
         >
           <Box sx={{ px: 1.5, pt: 0.3, pb: 4.8 }}><LumenLogo /></Box>
           <Stack spacing={1.1}>
-            <NavItem icon="⌂" label="Home" active />
+            <NavItem icon="⌂" label="Home" active onClick={onHome} />
             <NavItem icon="▤" label="Learn" />
             <NavItem icon="▥" label="Progress" />
             <NavItem icon="▧" label="Resources" />
@@ -135,18 +143,36 @@ function ParentShell({ children }: { children: ReactNode }) {
           >
             <Stack direction="row" spacing={{ xs: 2, md: 5 }} alignItems="center" sx={{ display: { xs: 'none', sm: 'flex' } }}>
               {['Home', 'Learn', 'Progress', 'Resources'].map((item) => (
-                <Typography key={item} sx={{ color: item === 'Home' ? '#1677ff' : '#1f376d', fontWeight: item === 'Home' ? 800 : 600, fontSize: '0.96rem' }}>
+                <Button
+                  key={item}
+                  disabled={item !== 'Home'}
+                  onClick={item === 'Home' ? onHome : undefined}
+                  aria-current={item === 'Home' ? 'page' : undefined}
+                  sx={{ minWidth: 0, p: 0, color: item === 'Home' ? '#1677ff' : '#1f376d', fontWeight: item === 'Home' ? 800 : 600, fontSize: '0.96rem', textTransform: 'none', '&.Mui-disabled': { color: '#7d8cac' } }}
+                >
                   {item}
-                </Typography>
+                </Button>
               ))}
             </Stack>
             <Box sx={{ display: { xs: 'block', sm: 'none' } }}><LumenLogo /></Box>
-            <Stack direction="row" spacing={1.4} alignItems="center">
-              <Typography aria-hidden="true" sx={{ fontSize: 22, color: '#48679c' }}>♢</Typography>
-              <Avatar sx={{ width: 40, height: 40, bgcolor: '#5d4ddb', fontSize: 16 }}>P</Avatar>
-              <Typography sx={{ color: '#0b1f5e', fontWeight: 700, display: { xs: 'none', sm: 'block' } }}>Parent</Typography>
-              <Typography aria-hidden="true" sx={{ color: '#35598d' }}>⌄</Typography>
-            </Stack>
+            <>
+              <Button
+                aria-label="Parent account"
+                aria-haspopup="menu"
+                aria-expanded={Boolean(accountAnchor)}
+                onClick={(event) => setAccountAnchor(event.currentTarget)}
+                sx={{ gap: 1.4, color: '#0b1f5e', textTransform: 'none', borderRadius: 2 }}
+              >
+                <Typography aria-hidden="true" sx={{ fontSize: 22, color: '#48679c' }}>♢</Typography>
+                <Avatar sx={{ width: 40, height: 40, bgcolor: '#5d4ddb', fontSize: 16 }}>{parentDisplayName.charAt(0).toUpperCase()}</Avatar>
+                <Typography sx={{ fontWeight: 700, display: { xs: 'none', sm: 'block' } }}>{parentDisplayName}</Typography>
+                <Typography aria-hidden="true" sx={{ color: '#35598d' }}>⌄</Typography>
+              </Button>
+              <Menu anchorEl={accountAnchor} open={Boolean(accountAnchor)} onClose={() => setAccountAnchor(null)}>
+                <MenuItem disabled>{parentDisplayName}</MenuItem>
+                <MenuItem onClick={() => { setAccountAnchor(null); void onLogout(); }}>Logout</MenuItem>
+              </Menu>
+            </>
           </Box>
           {children}
         </Box>
@@ -220,10 +246,14 @@ export default function LearnerLanding({
   onRetry,
   onAddLearner,
   onOpenLearner,
+  parentDisplayName,
+  onLogout,
+  onHome,
 }: Props) {
+  const shellProps = { parentDisplayName, onLogout, onHome };
   if (state === 'loading') {
     return (
-      <ParentShell>
+      <ParentShell {...shellProps}>
         <Stack spacing={2} alignItems="flex-start" aria-live="polite" sx={{ p: { xs: 4, md: 8 } }}>
           <CircularProgress aria-label="Loading learners" />
           <Typography>Loading your learners…</Typography>
@@ -234,7 +264,7 @@ export default function LearnerLanding({
 
   if (state === 'error') {
     return (
-      <ParentShell>
+      <ParentShell {...shellProps}>
         <Box sx={{ p: { xs: 4, md: 8 } }}>
           <Alert severity="error" action={<Button color="inherit" onClick={onRetry}>Try again</Button>}>
             We couldn't load your learners. Try again.
@@ -246,7 +276,7 @@ export default function LearnerLanding({
 
   if (state === 'forbidden') {
     return (
-      <ParentShell>
+      <ParentShell {...shellProps}>
         <Box sx={{ p: { xs: 4, md: 8 } }}>
           <Alert severity="warning">You don't have access to this learner.</Alert>
         </Box>
@@ -255,11 +285,11 @@ export default function LearnerLanding({
   }
 
   if (learners.length === 0) {
-    return <ParentShell><EmptyState onAddLearner={onAddLearner} /></ParentShell>;
+    return <ParentShell {...shellProps}><EmptyState onAddLearner={onAddLearner} /></ParentShell>;
   }
 
   return (
-    <ParentShell>
+    <ParentShell {...shellProps}>
       <Box sx={{ px: { xs: 3, sm: 5, lg: 5.5 }, py: { xs: 4, lg: 4.5 } }}>
         <Typography component="h2" sx={visuallyHidden}>Learners</Typography>
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', xl: 'minmax(0, 1fr) 360px' }, gap: 3.5, alignItems: 'start' }}>
