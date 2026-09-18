@@ -88,7 +88,7 @@ describe('LearnerLanding', () => {
     expect(account).toHaveFocus();
     fireEvent.click(account);
     expect(await screen.findByRole('menu')).toBeInTheDocument();
-    expect(screen.getByRole('menuitem', { name: 'Harsha Shetty' })).toBeDisabled();
+    expect(screen.getByRole('menuitem', { name: 'Harsha Shetty' })).toHaveAttribute('aria-disabled', 'true');
     fireEvent.click(screen.getByRole('menuitem', { name: 'Logout' }));
     await waitFor(() => expect(onLogout).toHaveBeenCalledOnce());
   });
