@@ -16,7 +16,7 @@ describe('App', () => {
     render(<App />);
     expect(screen.getByTestId('flow-state')).toHaveTextContent('loading:loading:ready');
     await waitFor(() => expect(screen.getByTestId('flow-state')).toHaveTextContent('ready:ready:ready'));
-    expect(latestProps.learners).toEqual([{ id: 'learner-1', displayName: 'Ava' }]); expect(latestProps.curricula).toEqual([{ id: 'curr-1', name: 'CBSE Mathematics', gradeLevel: 'Grade 3', subject: 'Mathematics' }]); expect(latestProps.selectedCurriculumIdsByLearner).toEqual({ 'learner-1': ['curr-1'] }); expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(latestProps.learners).toEqual([{ id: 'learner-1', displayName: 'Ava' }]); expect(latestProps.curricula).toEqual([{ id: 'curr-1', name: 'CBSE Mathematics', gradeLevel: 'Grade 3', subject: 'Mathematics' }]); expect(latestProps.selectedCurriculumIdsByLearner).toEqual({ 'learner-1': ['curr-1'] }); expect(fetchMock).toHaveBeenCalledTimes(4);
   });
 
   it('handles an empty first-time account', async () => {
@@ -55,12 +55,33 @@ describe('App', () => {
   });
 
   it('adds and removes only changed curriculum selections and accepts 204 responses', async () => {
-    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(jsonResponse([{ id: 'learner-1', displayName: 'Ava' }])).mockResolvedValueOnce(jsonResponse([{ id: 'curr-1', name: 'Math', gradeLevel: 'Grade 3', subjectName: 'Mathematics' }, { id: 'curr-2', name: 'Olympiad Math', gradeLevel: 'Grade 3', subjectName: 'Mathematics' }])).mockResolvedValueOnce(jsonResponse({ displayName: 'Harsha' })).mockResolvedValueOnce(jsonResponse([{ id: 'curr-1', name: 'Math', gradeLevel: 'Grade 3', subjectName: 'Mathematics' }])).mockResolvedValueOnce(jsonResponse({ id: 'curr-2' })).mockResolvedValueOnce(emptyResponse(204)); render(<App />); await waitFor(() => expect(screen.getByTestId('flow-state')).toHaveTextContent('ready:ready:ready')); await act(async () => { await latestProps.onSaveCurricula('learner-1', ['curr-2']); }); expect(fetchMock.mock.calls[5][0]).toBe('/api/learners/learner-1/curricula/curr-2'); expect(fetchMock.mock.calls[5][1]?.method).toBe('POST'); expect(fetchMock.mock.calls[5][0]).toBe('/api/learners/learner-1/curricula/curr-1'); expect(fetchMock.mock.calls[5][1]?.method).toBe('DELETE'); expect(latestProps.selectedCurriculumIdsByLearner['learner-1']).toEqual(['curr-2']);
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(jsonResponse([{ id: 'learner-1', displayName: 'Ava' }])).mockResolvedValueOnce(jsonResponse([{ id: 'curr-1', name: 'Math', gradeLevel: 'Grade 3', subjectName: 'Mathematics' }, { id: 'curr-2', name: 'Olympiad Math', gradeLevel: 'Grade 3', subjectName: 'Mathematics' }])).mockResolvedValueOnce(jsonResponse({ displayName: 'Harsha' })).mockResolvedValueOnce(jsonResponse([{ id: 'curr-1', name: 'Math', gradeLevel: 'Grade 3', subjectName: 'Mathematics' }])).mockResolvedValueOnce(jsonResponse({ id: 'curr-2' })).mockResolvedValueOnce(emptyResponse(204)); render(<App />); await waitFor(() => expect(screen.getByTestId('flow-state')).toHaveTextContent('ready:ready:ready')); await act(async () => { await latestProps.onSaveCurricula('learner-1', ['curr-2']); }); expect(fetchMock.mock.calls[4][0]).toBe('/api/learners/learner-1/curricula/curr-2'); expect(fetchMock.mock.calls[4][1]?.method).toBe('POST'); expect(fetchMock.mock.calls[5][0]).toBe('/api/learners/learner-1/curricula/curr-1'); expect(fetchMock.mock.calls[5][1]?.method).toBe('DELETE'); expect(latestProps.selectedCurriculumIdsByLearner['learner-1']).toEqual(['curr-2']);
   });
 
   it('does not send a CSRF header when the cookie is absent and retries through the shared loader', async () => {
-    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(jsonResponse([])).mockResolvedValueOnce(jsonResponse([])).mockResolvedValueOnce(jsonResponse([])).mockResolvedValueOnce(jsonResponse([])).mockResolvedValueOnce(jsonResponse({ displayName: 'Harsha' })); render(<App />); await waitFor(() => expect(screen.getByTestId('flow-state')).toHaveTextContent('ready:ready:ready')); await act(async () => { await latestProps.onSaveCurricula('unknown', []); await latestProps.onRetryLearners(); }); expect(fetchMock).toHaveBeenCalledTimes(6); expect(latestProps.onRetryLearners).toBe(latestProps.onRetryCurricula); expect(latestProps.onRetryLearners).toBe(latestProps.onRetryProfile);
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(jsonResponse([])).mockResolvedValueOnce(jsonResponse([])).mockResolvedValueOnce(jsonResponse({ displayName: 'Harsha' })).mockResolvedValueOnce(jsonResponse([])).mockResolvedValueOnce(jsonResponse([])).mockResolvedValueOnce(jsonResponse({ displayName: 'Harsha' })); render(<App />); await waitFor(() => expect(screen.getByTestId('flow-state')).toHaveTextContent('ready:ready:ready')); await act(async () => { await latestProps.onSaveCurricula('unknown', []); await latestProps.onRetryLearners(); }); expect(fetchMock).toHaveBeenCalledTimes(6); expect(latestProps.onRetryLearners).toBe(latestProps.onRetryCurricula); expect(latestProps.onRetryLearners).toBe(latestProps.onRetryProfile);
   });
+
+  it('keeps a truthful generic account label when identity lookup fails', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(jsonResponse([])).mockResolvedValueOnce(jsonResponse([])).mockResolvedValueOnce(emptyResponse(500));
+    render(<App />);
+    await waitFor(() => expect(screen.getByTestId('flow-state')).toHaveTextContent('ready:ready:ready'));
+    expect(latestProps.parentDisplayName).toBe('Parent account');
+  });
+
+  it('surfaces a failed server logout without pretending the session ended', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(jsonResponse([]))
+      .mockResolvedValueOnce(jsonResponse([]))
+      .mockResolvedValueOnce(jsonResponse({ displayName: 'Harsha' }))
+      .mockResolvedValueOnce(emptyResponse(500));
+    render(<App />);
+    await waitFor(() => expect(screen.getByTestId('flow-state')).toHaveTextContent('ready:ready:ready'));
+    await expect(latestProps.onLogout()).rejects.toThrow('Logout failed: 500');
+    expect(fetchMock.mock.calls[3][0]).toBe('/logout');
+    expect(screen.getByTestId('flow-state')).toHaveTextContent('ready:ready:ready');
+  });
+
   it('logs out through the CSRF-protected server endpoint and returns to sign-in', async () => {
     Object.defineProperty(document, 'cookie', { configurable: true, value: 'XSRF-TOKEN=logout%20token' });
     const fetchMock = vi.spyOn(globalThis, 'fetch')
