@@ -25,6 +25,8 @@ function renderFlow(options?: {
       learners={options?.learners ?? []}
       curricula={curricula}
       selectedCurriculumIdsByLearner={options?.selections ?? {}}
+      parentDisplayName="Harsha Shetty"
+      onLogout={vi.fn(async () => undefined)}
       onRetryLearners={vi.fn()}
       onRetryCurricula={vi.fn()}
       onRetryProfile={vi.fn()}
