@@ -10,6 +10,7 @@ type FlowState = 'loading' | 'error' | 'forbidden' | 'ready';
 type LearnerViewState = FlowState | 'unauthenticated';
 
 type CurriculumResponse = { id: string; name: string; gradeLevel: string; subjectName: string; };
+type CurrentUserResponse = { displayName: string; };
 
 const csrfToken = () => document.cookie.split('; ').find((cookie) => cookie.startsWith('XSRF-TOKEN='))?.split('=')[1];
 
@@ -46,11 +47,13 @@ export default function App() {
   const [learners, setLearners] = useState<LearnerSummary[]>([]);
   const [curricula, setCurricula] = useState<CurriculumChoice[]>([]);
   const [selectedByLearner, setSelectedByLearner] = useState<Record<string, string[]>>({});
+  const [parentDisplayName, setParentDisplayName] = useState('Parent account');
 
   const load = useCallback(async () => {
     setLearnerState('loading'); setCurriculumState('loading'); setProfileState('ready');
-    const [learnerResult, curriculumResult] = await Promise.allSettled([request<LearnerSummary[]>('/api/learners'), request<CurriculumResponse[]>('/api/curricula')]);
-    if (isUnauthenticated(learnerResult) || isUnauthenticated(curriculumResult)) { setLearnerState('unauthenticated'); setCurriculumState('error'); setProfileState('error'); return; }
+    const [learnerResult, curriculumResult, currentUserResult] = await Promise.allSettled([request<LearnerSummary[]>('/api/learners'), request<CurriculumResponse[]>('/api/curricula'), request<CurrentUserResponse>('/api/me')]);
+    if (isUnauthenticated(learnerResult) || isUnauthenticated(curriculumResult) || isUnauthenticated(currentUserResult)) { setLearnerState('unauthenticated'); setCurriculumState('error'); setProfileState('error'); return; }
+    if (currentUserResult.status === 'fulfilled') setParentDisplayName(currentUserResult.value.displayName);
 
     if (curriculumResult.status === 'fulfilled') { setCurricula(curriculumResult.value.map(toChoice)); setCurriculumState('ready'); }
     else { setCurriculumState(failureState(curriculumResult.reason)); }
@@ -70,7 +73,15 @@ export default function App() {
 
   useEffect(() => { void load(); }, [load]);
   const createLearner = async (displayName: string) => { const learner = await request<LearnerSummary>('/api/learners', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ displayName }) }); setLearners((current) => [...current, learner]); setSelectedByLearner((current) => ({ ...current, [learner.id]: [] })); return learner; };
+  const logout = async () => {
+    const headers = new Headers();
+    const token = csrfToken();
+    if (token) headers.set('X-XSRF-TOKEN', decodeURIComponent(token));
+    const response = await fetch('/logout', { method: 'POST', headers });
+    if (!response.ok) throw new Error(`Logout failed: ${response.status}`);
+    setLearnerState('unauthenticated');
+  };
   const saveCurricula = async (learnerId: string, selectedIds: string[]) => { const currentIds = selectedByLearner[learnerId] ?? []; const current = new Set(currentIds); const next = new Set(selectedIds); await Promise.all([...selectedIds.filter((id) => !current.has(id)).map((id) => request(`/api/learners/${learnerId}/curricula/${id}`, { method: 'POST' })), ...currentIds.filter((id) => !next.has(id)).map((id) => request(`/api/learners/${learnerId}/curricula/${id}`, { method: 'DELETE' }))]); setSelectedByLearner((selections) => ({ ...selections, [learnerId]: selectedIds })); };
   if (learnerState === 'unauthenticated') return <SignInLanding />;
-  return <ParentOnboardingFlow learnerState={learnerState} curriculumState={curriculumState} profileState={profileState} learners={learners} curricula={curricula} selectedCurriculumIdsByLearner={selectedByLearner} onRetryLearners={load} onRetryCurricula={load} onRetryProfile={load} onCreateLearner={createLearner} onSaveCurricula={saveCurricula} />;
+  return <ParentOnboardingFlow learnerState={learnerState} curriculumState={curriculumState} profileState={profileState} learners={learners} curricula={curricula} selectedCurriculumIdsByLearner={selectedByLearner} parentDisplayName={parentDisplayName} onLogout={logout} onRetryLearners={load} onRetryCurricula={load} onRetryProfile={load} onCreateLearner={createLearner} onSaveCurricula={saveCurricula} />;
 }
