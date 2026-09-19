@@ -126,6 +126,7 @@ for (const viewport of viewports) {
     const learners = [{ id: 'learner-one', displayName: 'Ava' }, { id: 'learner-two', displayName: 'Noah' }, { id: 'learner-three', displayName: 'Mia' }];
     await page.route('**/api/learners', (route) => route.fulfill({ contentType: 'application/json', body: JSON.stringify(learners) }));
     await page.route('**/api/curricula', (route) => route.fulfill({ contentType: 'application/json', body: '[]' }));
+    await page.route('**/api/me', (route) => route.fulfill({ contentType: 'application/json', body: JSON.stringify({ displayName: 'Visual Test Parent' }) }));
     await page.route(/\/api\/learners\/[^/]+\/curricula$/, (route) => route.fulfill({ contentType: 'application/json', body: '[]' }));
     await page.setViewportSize({ width: viewport.width, height: viewport.height }); expect((await page.goto('/'))?.ok()).toBeTruthy();
     await expect(page.getByRole('heading', { name: 'Good morning!' })).toBeVisible();
