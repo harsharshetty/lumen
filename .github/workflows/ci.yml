@@ -167,6 +167,16 @@ jobs:
           severity: HIGH,CRITICAL
           exit-code: '1'
           ignore-unfixed: true
+          format: json
+          output: trivy-production-image.json
+      - name: Upload production image vulnerability evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: production-image-vulnerability-evidence
+          path: trivy-production-image.json
+          if-no-files-found: error
+          retention-days: 7
       - name: Start production image
         run: |
           docker run --detach --name lumen-ui-ci --network host \
