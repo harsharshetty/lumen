@@ -89,6 +89,11 @@ describe('LearnerLanding', () => {
     fireEvent.click(account);
     expect(await screen.findByRole('menu')).toBeInTheDocument();
     expect(screen.getByRole('menuitem', { name: 'Harsha Shetty' })).toHaveAttribute('aria-disabled', 'true');
+    fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
+    await waitFor(() => expect(screen.queryByRole('menu')).not.toBeInTheDocument());
+
+    fireEvent.click(account);
+    expect(await screen.findByRole('menu')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('menuitem', { name: 'Logout' }));
     await waitFor(() => expect(onLogout).toHaveBeenCalledOnce());
   });
