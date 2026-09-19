@@ -10,16 +10,7 @@
   <groupId>com.lumen</groupId>
   <artifactId>lumen-backend</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <properties>
-    <java.version>21</java.version>
-    <!-- Security patch overrides until the Spring Boot 3.5 BOM catches up. -->
-    <jackson-bom.version>2.21.4</jackson-bom.version>
-    <micrometer.version>1.15.12</micrometer.version>
-    <postgresql.version>42.7.12</postgresql.version>
-    <spring-framework.version>6.2.19</spring-framework.version>
-    <spring-data-bom.version>2025.0.12</spring-data-bom.version>
-    <tomcat.version>10.1.58</tomcat.version>
-  </properties>
+  <properties><java.version>21</java.version></properties>
   <dependencies>
     <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-web</artifactId></dependency>
     <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-data-jpa</artifactId></dependency>
