@@ -130,6 +130,13 @@ for (const viewport of viewports) {
     await page.route(/\/api\/learners\/[^/]+\/curricula$/, (route) => route.fulfill({ contentType: 'application/json', body: '[]' }));
     await page.setViewportSize({ width: viewport.width, height: viewport.height }); expect((await page.goto('/'))?.ok()).toBeTruthy();
     await expect(page.getByRole('heading', { name: 'Good morning!' })).toBeVisible();
+    const account = page.getByRole('button', { name: 'Account menu for Visual Test Parent' });
+    await expect(account).toBeVisible(); await account.focus(); await page.keyboard.press('Enter');
+    const accountMenu = page.getByRole('menu'); await expect(accountMenu).toBeVisible();
+    await expect(accountMenu.getByText('Visual Test Parent')).toBeVisible();
+    await expect(accountMenu.getByRole('menuitem', { name: 'Profile, coming soon' })).toHaveAttribute('aria-disabled', 'true');
+    await expect(accountMenu.getByRole('menuitem', { name: 'Log out' })).toBeVisible();
+    await page.keyboard.press('Escape'); await expect(accountMenu).toBeHidden(); await expect(account).toBeFocused();
     const artwork = page.getByTestId('parent-home-artwork'); const details = await assertLoadedImage(page, artwork, approvedAssets.parentHome.width, approvedAssets.parentHome.height);
     expect(details.objectFit).toBe('contain'); expect(details.objectPosition).toBe('100% 100%');
     const artworkBox = await artwork.boundingBox(); if (!artworkBox) throw new Error('Parent-home artwork geometry was not measurable');
@@ -154,6 +161,16 @@ for (const viewport of viewports) {
     const avatarScreenshots = await Promise.all([0, 1, 2].map((index) => avatarFrames.nth(index).screenshot({ animations: 'disabled' })));
     expect((await compareArtwork(page, avatarScreenshots[0], avatarScreenshots[1])).meanAbsoluteChannelDifference).toBeGreaterThan(10);
     expect((await compareArtwork(page, avatarScreenshots[1], avatarScreenshots[2])).meanAbsoluteChannelDifference).toBeGreaterThan(10);
+    const contentGrid = page.getByTestId('parent-home-content-grid'); const learnerList = page.getByTestId('learner-list'); const motivationCard = page.getByTestId('motivation-card');
+    await expect(contentGrid).toBeVisible(); await expect(learnerList).toBeVisible();
+    if (viewport.name === 'desktop') {
+      await expect(motivationCard).toBeVisible();
+      const learnerBox = await learnerList.boundingBox(); const motivationBox = await motivationCard.boundingBox();
+      if (!learnerBox || !motivationBox) throw new Error('Parent-home content alignment was not measurable');
+      expect(Math.abs(learnerBox.y - motivationBox.y), 'Learner list and motivation card must share a baseline').toBeLessThanOrEqual(1);
+    } else {
+      await expect(motivationCard).toBeHidden();
+    }
     expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(1);
     await testInfo.attach(`parent-home-${viewport.name}`, { body: await page.screenshot({ fullPage: true }), contentType: 'image/png' });
   });
