@@ -4,6 +4,8 @@ import {
   Box,
   Button,
   CircularProgress,
+  Divider,
+  ListItemText,
   Menu,
   MenuItem,
   Paper,
@@ -74,6 +76,7 @@ function NavItem({ icon, label, active = false, onClick }: { icon: string; label
 
 function ParentShell({ children, parentDisplayName, onLogout, onHome }: { children: ReactNode; parentDisplayName: string; onLogout: () => Promise<void>; onHome: () => void }) {
   const [accountAnchor, setAccountAnchor] = useState<HTMLElement | null>(null);
+  const accountInitial = parentDisplayName.charAt(0).toUpperCase();
   return (
     <Box component="main" sx={{ minHeight: '100vh', bgcolor: '#f7faff', color: '#0b1f3a' }}>
       <Box sx={{ minHeight: '100vh', display: 'grid', gridTemplateColumns: { xs: '1fr', md: '264px minmax(0, 1fr)' } }}>
@@ -157,20 +160,63 @@ function ParentShell({ children, parentDisplayName, onLogout, onHome }: { childr
             <Box sx={{ display: { xs: 'block', sm: 'none' } }}><LumenLogo /></Box>
             <>
               <Button
-                aria-label="Parent account"
+                id="parent-account-button"
+                aria-label={`Account menu for ${parentDisplayName}`}
                 aria-haspopup="menu"
                 aria-expanded={Boolean(accountAnchor)}
                 onClick={(event) => setAccountAnchor(event.currentTarget)}
-                sx={{ gap: 1.4, color: '#0b1f5e', textTransform: 'none', borderRadius: 2 }}
+                sx={{
+                  gap: { xs: 0.8, sm: 1.2 },
+                  minHeight: 52,
+                  px: { xs: 0.8, sm: 1.3 },
+                  color: '#0b1f5e',
+                  textTransform: 'none',
+                  borderRadius: 2.5,
+                  '&:hover': { bgcolor: '#f0f5ff' },
+                  '&:focus-visible': { outline: '3px solid rgba(22,119,255,.28)', outlineOffset: 2 },
+                }}
               >
-                <Typography aria-hidden="true" sx={{ fontSize: 22, color: '#48679c' }}>♢</Typography>
-                <Avatar sx={{ width: 40, height: 40, bgcolor: '#5d4ddb', fontSize: 16 }}>{parentDisplayName.charAt(0).toUpperCase()}</Avatar>
-                <Typography sx={{ fontWeight: 700, display: { xs: 'none', sm: 'block' } }}>{parentDisplayName}</Typography>
-                <Typography aria-hidden="true" sx={{ color: '#35598d' }}>⌄</Typography>
+                <Avatar sx={{ width: 40, height: 40, bgcolor: '#5d4ddb', fontSize: 16, fontWeight: 800 }}>{accountInitial}</Avatar>
+                <Typography sx={{ fontWeight: 750, display: { xs: 'none', sm: 'block' }, maxWidth: 190, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{parentDisplayName}</Typography>
+                <Typography aria-hidden="true" sx={{ color: '#54709e', fontSize: 18, transform: accountAnchor ? 'rotate(180deg)' : 'none', transition: 'transform 120ms ease' }}>⌄</Typography>
               </Button>
-              <Menu anchorEl={accountAnchor} open={Boolean(accountAnchor)} onClose={() => setAccountAnchor(null)}>
-                <MenuItem disabled>{parentDisplayName}</MenuItem>
-                <MenuItem onClick={() => { setAccountAnchor(null); void onLogout(); }}>Logout</MenuItem>
+              <Menu
+                anchorEl={accountAnchor}
+                open={Boolean(accountAnchor)}
+                onClose={() => setAccountAnchor(null)}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                MenuListProps={{ 'aria-labelledby': 'parent-account-button', sx: { p: 1 } }}
+                slotProps={{
+                  paper: {
+                    sx: {
+                      mt: 1,
+                      width: 300,
+                      maxWidth: 'calc(100vw - 24px)',
+                      border: '1px solid #e0e7f3',
+                      borderRadius: 3,
+                      boxShadow: '0 18px 48px rgba(35, 61, 112, 0.18)',
+                    },
+                  },
+                }}
+              >
+                <Stack direction="row" spacing={1.5} alignItems="center" sx={{ px: 1.5, py: 1.4 }}>
+                  <Avatar sx={{ width: 44, height: 44, bgcolor: '#5d4ddb', fontSize: 17, fontWeight: 800 }}>{accountInitial}</Avatar>
+                  <Box sx={{ minWidth: 0 }}>
+                    <Typography sx={{ color: '#0b1f5e', fontWeight: 800, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{parentDisplayName}</Typography>
+                    <Typography variant="body2" sx={{ color: '#6c7da3' }}>Parent account</Typography>
+                  </Box>
+                </Stack>
+                <Divider sx={{ my: 0.6 }} />
+                <MenuItem disabled aria-label="Profile, coming soon" sx={{ mx: 0.5, my: 0.4, minHeight: 54, borderRadius: 2, '&.Mui-disabled': { opacity: 1, color: '#63759b' } }}>
+                  <ListItemText primary="Profile" secondary="Coming soon" primaryTypographyProps={{ fontWeight: 700 }} secondaryTypographyProps={{ fontSize: '0.75rem' }} />
+                </MenuItem>
+                <MenuItem
+                  onClick={() => { setAccountAnchor(null); void onLogout(); }}
+                  sx={{ mx: 0.5, my: 0.4, minHeight: 48, borderRadius: 2, color: '#173872', fontWeight: 700, '&:hover': { bgcolor: '#eef5ff' }, '&.Mui-focusVisible': { bgcolor: '#e4efff', outline: '2px solid #1677ff', outlineOffset: -2 } }}
+                >
+                  Log out
+                </MenuItem>
               </Menu>
             </>
           </Box>
@@ -292,21 +338,20 @@ export default function LearnerLanding({
     <ParentShell {...shellProps}>
       <Box sx={{ px: { xs: 3, sm: 5, lg: 5.5 }, py: { xs: 4, lg: 4.5 } }}>
         <Typography component="h2" sx={visuallyHidden}>Learners</Typography>
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', xl: 'minmax(0, 1fr) 360px' }, gap: 3.5, alignItems: 'start' }}>
-          <Box sx={{ minWidth: 0 }}>
-            <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'stretch', sm: 'flex-start' }} spacing={2}>
-              <Box>
-                <Typography component="h1" sx={{ color: '#0b1f5e', fontWeight: 800, fontSize: { xs: '2.2rem', lg: '2.7rem' }, letterSpacing: '-0.035em', lineHeight: 1.08 }}>
-                  Good morning!
-                </Typography>
-                <Typography sx={{ mt: 1, color: '#62719a', fontSize: { xs: '1rem', lg: '1.12rem' } }}>Here’s how your learners are doing.</Typography>
-              </Box>
-              <Button variant="contained" onClick={onAddLearner} sx={{ minHeight: 52, px: 3, fontSize: '1rem', whiteSpace: 'nowrap' }}>
-                ＋ Add learner
-              </Button>
-            </Stack>
+        <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'stretch', sm: 'flex-start' }} spacing={2}>
+          <Box>
+            <Typography component="h1" sx={{ color: '#0b1f5e', fontWeight: 800, fontSize: { xs: '2.2rem', lg: '2.7rem' }, letterSpacing: '-0.035em', lineHeight: 1.08 }}>
+              Good morning!
+            </Typography>
+            <Typography sx={{ mt: 1, color: '#62719a', fontSize: { xs: '1rem', lg: '1.12rem' } }}>Here’s how your learners are doing.</Typography>
+          </Box>
+          <Button variant="contained" onClick={onAddLearner} sx={{ minHeight: 52, px: 3, fontSize: '1rem', whiteSpace: 'nowrap' }}>
+            ＋ Add learner
+          </Button>
+        </Stack>
 
-            <Stack spacing={2.1} sx={{ mt: 4 }}>
+        <Box data-testid="parent-home-content-grid" sx={{ mt: 4, display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1fr) 360px' }, gap: 3.5, alignItems: 'start' }}>
+          <Stack data-testid="learner-list" spacing={2.1} sx={{ minWidth: 0 }}>
               {learners.map((learner, index) => (
                 <Paper
                   key={learner.id}
@@ -356,10 +401,9 @@ export default function LearnerLanding({
                   </Button>
                 </Paper>
               ))}
-            </Stack>
-          </Box>
+          </Stack>
 
-          <Box sx={{ display: { xs: 'none', xl: 'block' } }}><MotivationCard /></Box>
+          <Box data-testid="motivation-card" sx={{ display: { xs: 'none', lg: 'block' } }}><MotivationCard /></Box>
         </Box>
 
         <Box sx={{ mt: 4.5 }}>

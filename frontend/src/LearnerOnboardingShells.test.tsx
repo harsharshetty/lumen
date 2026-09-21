@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import LearnerForm from './LearnerForm';
 import LearnerLanding from './LearnerLanding';
@@ -83,18 +83,25 @@ describe('LearnerLanding', () => {
       screen.getAllByRole('button', { name: label }).forEach((button) => expect(button).toBeDisabled());
     }
 
-    const account = screen.getByRole('button', { name: 'Parent account' });
+    const account = screen.getByRole('button', { name: 'Account menu for Harsha Shetty' });
     account.focus();
     expect(account).toHaveFocus();
     fireEvent.click(account);
-    expect(await screen.findByRole('menu')).toBeInTheDocument();
-    expect(screen.getByRole('menuitem', { name: 'Harsha Shetty' })).toHaveAttribute('aria-disabled', 'true');
+    const menu = await screen.findByRole('menu');
+    expect(within(menu).getByText('Harsha Shetty')).toBeInTheDocument();
+    expect(within(menu).getByText('Parent account')).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: 'Profile, coming soon' })).toHaveAttribute('aria-disabled', 'true');
     fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
     await waitFor(() => expect(screen.queryByRole('menu')).not.toBeInTheDocument());
+    expect(account).toHaveFocus();
 
     fireEvent.click(account);
     expect(await screen.findByRole('menu')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('menuitem', { name: 'Logout' }));
+    fireEvent.keyDown(screen.getByRole('menu'), { key: 'ArrowDown' });
+    const logout = screen.getByRole('menuitem', { name: 'Log out' });
+    logout.focus();
+    expect(logout).toHaveFocus();
+    fireEvent.keyDown(logout, { key: 'Enter' });
     await waitFor(() => expect(onLogout).toHaveBeenCalledOnce());
   });
 
@@ -107,6 +114,8 @@ describe('LearnerLanding', () => {
     expect(screen.getAllByText('Learner profile')).toHaveLength(2);
     expect(screen.queryByText(/6\s*\/\s*10/)).not.toBeInTheDocument();
     expect(screen.queryByText("Today's focus")).not.toBeInTheDocument();
+    expect(screen.getByTestId('parent-home-content-grid')).toContainElement(screen.getByTestId('learner-list'));
+    expect(screen.getByTestId('parent-home-content-grid')).toContainElement(screen.getByTestId('motivation-card'));
 
     fireEvent.click(screen.getByRole('button', { name: /Add learner/ }));
     expect(onAddLearner).toHaveBeenCalledOnce();

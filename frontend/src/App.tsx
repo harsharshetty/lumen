@@ -47,13 +47,13 @@ export default function App() {
   const [learners, setLearners] = useState<LearnerSummary[]>([]);
   const [curricula, setCurricula] = useState<CurriculumChoice[]>([]);
   const [selectedByLearner, setSelectedByLearner] = useState<Record<string, string[]>>({});
-  const [parentDisplayName, setParentDisplayName] = useState('Parent account');
+  const [parentDisplayName, setParentDisplayName] = useState('Account');
 
   const load = useCallback(async () => {
     setLearnerState('loading'); setCurriculumState('loading'); setProfileState('ready');
     const [learnerResult, curriculumResult, currentUserResult] = await Promise.allSettled([request<LearnerSummary[]>('/api/learners'), request<CurriculumResponse[]>('/api/curricula'), request<CurrentUserResponse>('/api/me')]);
     if (isUnauthenticated(learnerResult) || isUnauthenticated(curriculumResult) || isUnauthenticated(currentUserResult)) { setLearnerState('unauthenticated'); setCurriculumState('error'); setProfileState('error'); return; }
-    if (currentUserResult.status === 'fulfilled') setParentDisplayName(currentUserResult.value.displayName);
+    if (currentUserResult.status === 'fulfilled') setParentDisplayName(currentUserResult.value.displayName.trim() || 'Account');
 
     if (curriculumResult.status === 'fulfilled') { setCurricula(curriculumResult.value.map(toChoice)); setCurriculumState('ready'); }
     else { setCurriculumState(failureState(curriculumResult.reason)); }

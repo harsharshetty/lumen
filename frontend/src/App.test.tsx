@@ -75,7 +75,14 @@ describe('App', () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(jsonResponse([])).mockResolvedValueOnce(jsonResponse([])).mockResolvedValueOnce(emptyResponse(500));
     render(<App />);
     await waitFor(() => expect(screen.getByTestId('flow-state')).toHaveTextContent('ready:ready:ready'));
-    expect(latestProps.parentDisplayName).toBe('Parent account');
+    expect(latestProps.parentDisplayName).toBe('Account');
+  });
+
+  it('uses the account fallback when the authenticated identity has no display name', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(jsonResponse([])).mockResolvedValueOnce(jsonResponse([])).mockResolvedValueOnce(jsonResponse({ displayName: '   ' }));
+    render(<App />);
+    await waitFor(() => expect(screen.getByTestId('flow-state')).toHaveTextContent('ready:ready:ready'));
+    expect(latestProps.parentDisplayName).toBe('Account');
   });
 
   it('surfaces a failed server logout without pretending the session ended', async () => {
