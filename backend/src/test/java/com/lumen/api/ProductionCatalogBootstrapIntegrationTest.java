@@ -7,6 +7,7 @@ import com.lumen.domain.UserRole;
 import com.lumen.repository.CurriculumRepository;
 import com.lumen.repository.LoginIdentityRepository;
 import com.lumen.repository.SubjectRepository;
+import com.lumen.repository.UserLearnerAccessRepository;
 import com.lumen.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,6 +41,7 @@ class ProductionCatalogBootstrapIntegrationTest {
     @Autowired private DataSource dataSource;
     @Autowired private CurriculumRepository curriculumRepository;
     @Autowired private SubjectRepository subjectRepository;
+    @Autowired private UserLearnerAccessRepository accessRepository;
     @Autowired private LoginIdentityRepository loginIdentityRepository;
     @Autowired private UserRepository userRepository;
 
@@ -47,6 +49,7 @@ class ProductionCatalogBootstrapIntegrationTest {
     void resetAndApplyBootstrap() {
         curriculumRepository.deleteAll();
         subjectRepository.deleteAll();
+        accessRepository.deleteAll();
         loginIdentityRepository.deleteAll();
         userRepository.deleteAll();
 
