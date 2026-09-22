@@ -23,8 +23,15 @@ jobs:
           java-version: '21'
       - name: Build, test and enforce backend coverage
         run: mvn --batch-mode verify
+      - name: Publish backend behavioral signal
+        if: always()
+        run: |
+          echo "## Backend unit/API + coverage" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Required gate: \`mvn verify\` (tests + repository coverage thresholds)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Behavioral traceability: [docs/quality/behavioral-test-matrix.md](https://github.com/${GITHUB_REPOSITORY}/blob/${GITHUB_SHA}/docs/quality/behavioral-test-matrix.md)" >> "$GITHUB_STEP_SUMMARY"
 
   postgres-persistence:
+    name: PostgreSQL/Flyway persistence
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -72,6 +79,12 @@ jobs:
         run: npm run typecheck
       - name: Test and enforce frontend coverage
         run: npm run test:coverage
+      - name: Publish frontend behavioral signal
+        if: always()
+        run: |
+          echo "## Frontend component + coverage" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Required gate: \`npm run test:coverage\` (component tests + repository coverage thresholds)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Behavioral traceability: [docs/quality/behavioral-test-matrix.md](https://github.com/${GITHUB_REPOSITORY}/blob/${GITHUB_SHA}/docs/quality/behavioral-test-matrix.md)" >> "$GITHUB_STEP_SUMMARY"
       - name: Build frontend
         run: npm run build
       - name: Verify authoritative frozen-screen sources and production assets
@@ -204,6 +217,13 @@ jobs:
       - name: Install Chromium
         working-directory: e2e
         run: npx playwright install --with-deps chromium
+      - name: Publish Playwright scenario count
+        working-directory: e2e
+        run: |
+          npx playwright test --list | tee /tmp/playwright-list.txt
+          echo "## Playwright behavioral E2E" >> "$GITHUB_STEP_SUMMARY"
+          grep '^Total:' /tmp/playwright-list.txt >> "$GITHUB_STEP_SUMMARY" || true
+          echo "- Behavioral traceability: [docs/quality/behavioral-test-matrix.md](https://github.com/${GITHUB_REPOSITORY}/blob/${GITHUB_SHA}/docs/quality/behavioral-test-matrix.md)" >> "$GITHUB_STEP_SUMMARY"
       - name: Run Playwright E2E
         working-directory: e2e
         run: npm test
