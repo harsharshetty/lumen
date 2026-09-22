@@ -11,7 +11,6 @@ permissions:
 
 jobs:
   backend:
-    name: Backend unit/API + coverage
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -65,7 +64,6 @@ jobs:
         run: mvn --batch-mode -Dtest=PostgresPersistenceIntegrationTest test
 
   frontend:
-    name: Frontend component + coverage
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -181,7 +179,6 @@ jobs:
         run: docker rm --force lumen-ui-ci || true
 
   e2e:
-    name: Playwright behavioral E2E
     needs: [backend, frontend]
     runs-on: ubuntu-latest
     services:
