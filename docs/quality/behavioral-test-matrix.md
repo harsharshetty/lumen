@@ -23,7 +23,7 @@ Raw line/branch coverage is tracked independently. Lumen's 100% line/branch requ
 
 ## Current traceability matrix
 
-Status reflects `main` at `a2533305` (2026-09-21). Open PRs are not counted as protection on `main`.
+Status reflects `main` at `0fc67cec` (2026-09-22). Open PRs are not counted as protection on `main`.
 
 | Source | Behavior / invariant | Risk | Required layer | Current automated protection on `main` | Status | Next protection / dependency |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -42,15 +42,15 @@ Status reflects `main` at `a2533305` (2026-09-21). Open PRs are not counted as p
 | #23 | Curriculum selection is explicit; duplicate selection prevented; inactive curricula cannot be newly selected | High | server integration + PostgreSQL + E2E | Controller/service tests plus `e2e/tests/onboarding-curriculum.spec.ts`; PostgreSQL persistence gate is mandatory CI | Protected | Preserve remove/reselect lifecycle coverage as behavior evolves |
 | #23 / ADR-002 | Subject/program choices are independent; one curriculum selection does not auto-enroll another | Release-blocking | server integration + E2E | `e2e/tests/onboarding-curriculum.spec.ts` directly asserts independent Mathematics/Hindi choices and absence of unintended selection after new session | Protected | None beyond regression maintenance |
 | #25/#29 | No-learner user enters onboarding; returning user sees only authorized learners | High | component + E2E | learner-isolation and onboarding Playwright suites cover first-use, reload/new-session and authorized-only visibility | Protected | None beyond regression maintenance |
-| #26 | Playwright exercises React + Spring Boot + PostgreSQL runtime and blocks CI on failure | High | E2E/CI | `e2e` CI job with PostgreSQL and retained failure diagnostics; feature suites include learner isolation/onboarding | Protected | #35 should improve reporting visibility, not weaken gate |
+| #26 | Playwright exercises React + Spring Boot + PostgreSQL runtime and blocks CI on failure | High | E2E/CI | `e2e` CI job with PostgreSQL and retained failure diagnostics; feature suites include learner isolation/onboarding | Protected | #35 reporting work remains additive |
 | #27 | Full authentication/identity-isolation browser journey including first/repeat login and cross-provider separation | Release-blocking | E2E | Infrastructure exists; current E2E security fixture does not substitute for real provider identity lifecycle proof | Not yet implemented | #27 remains dependency-ready against landed #19 |
 | #28 | ADMIN curriculum lifecycle works end-to-end; USER cannot gain mutation rights via UI/direct API | Release-blocking | E2E + server integration | Server authorization exists; admin browser lifecycle is absent | Partial | #22/#28 UI integration |
 | #29 | OWNER/CONTRIBUTOR/VIEWER/no-access behavior and cross-user learner isolation | Release-blocking | E2E + server integration | `e2e/tests/learner-isolation.spec.ts` plus server boundary tests; #29 closed complete | Protected | Invitation/access-management expansion belongs to #34/#37/#38 |
 | #30 | Explicit onboarding/curriculum selection persists across new session and never auto-enrolls unintended curricula | Release-blocking | E2E | `e2e/tests/onboarding-curriculum.spec.ts`; #30 closed complete | Protected | None beyond regression maintenance |
 | #33 | Flyway migrations and critical persistence constraints work on PostgreSQL | Release-blocking | PostgreSQL integration/CI | `PostgresPersistenceIntegrationTest` runs in dedicated `postgres-persistence` CI job against PostgreSQL 16 | Protected | Keep independent from H2/unit coverage |
 | #34/#37/#38 / ADR-002 | OWNER-only invitation/access lifecycle, verified-email binding, expiry, resend invalidation, single-use, last-owner invariant | Release-blocking | server integration + PostgreSQL + E2E | Test contract exists in #34; product capability is not implemented | Not yet implemented | #37/#38 then #34 execution |
-| #35 | Behavioral test layers/counts and remaining protection gaps are review-visible in CI | High | CI/reporting | Jobs are separated (backend, PostgreSQL, frontend, production visual, E2E), but counts/matrix gap summary are not published as a consolidated signal | Partial | #35 |
-| #55 | SAST/SCA/secret/container security gates block vulnerable production delivery | Release-blocking before real user data | CI/security | Security refresh is in draft PR #141; current `main` does not yet contain those mandatory gates | Unprotected | #141 must refresh onto current `main` and clear image vulnerability gate without suppression |
+| #35 | Behavioral test layers/counts and remaining protection gaps are review-visible in CI | High | CI/reporting | #144 separates backend, PostgreSQL/Flyway, frontend and Playwright signals, publishes Playwright scenario discovery, and links CI summaries to this matrix | Partial | Publish normalized backend unit vs API/integration counts, frontend component count, and raw backend/frontend line+branch coverage values |
+| #55 | SAST/SCA/secret/container security gates block vulnerable production delivery | Release-blocking before real user data | CI/security | No mandatory security-gate implementation is present on current `main`; former draft PR #141 was closed without merge and its branch collapsed to `main`, so it is not completion evidence | Unprotected | Recreate the approved additive security delta from current `main`; preserve HIGH/CRITICAL image blocking and prove backend + PostgreSQL/Flyway + source-security + CodeQL + image scan + visual + Playwright green without suppression |
 
 ## Required update pattern for feature PRs
 
@@ -64,6 +64,6 @@ Do not mark a behavior Protected merely because every changed line executed unde
 
 ## Relationship to CI and coverage
 
-CI exposes backend tests/coverage, PostgreSQL/Flyway persistence, frontend tests/coverage, production-container visual acceptance, controller tests, and Playwright E2E as independent signals. #35 remains open because behavioral test counts and remaining Partial/Unprotected release-blocking rows are not yet surfaced as a consolidated PR/main signal.
+CI exposes backend tests/coverage, PostgreSQL/Flyway persistence, frontend tests/coverage, production-container visual acceptance, controller tests, and Playwright E2E as independent signals. #144 added explicit behavioral summaries, Playwright discovered-scenario reporting, and traceability links. #35 remains open for normalized backend unit vs API/integration counts, frontend component count, and raw backend/frontend line+branch coverage values.
 
-Security is deliberately tracked separately from behavioral correctness. Until #55/#141 lands green on current `main`, a green correctness pipeline must not be interpreted as proof that the production artifact clears the mandatory HIGH/CRITICAL security boundary.
+Security is deliberately tracked separately from behavioral correctness. Until #55 lands green on current `main`, a green correctness pipeline must not be interpreted as proof that the production artifact clears the mandatory HIGH/CRITICAL security boundary. Closed/unmerged PR #141 is historical evidence only, not a current security control.
