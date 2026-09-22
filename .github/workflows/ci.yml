@@ -28,6 +28,24 @@ jobs:
         run: |
           echo "## Backend unit/API + coverage" >> "$GITHUB_STEP_SUMMARY"
           echo "- Required gate: \`mvn verify\` (tests + repository coverage thresholds)" >> "$GITHUB_STEP_SUMMARY"
+          unit_classes=$(find src/test/java -name '*Test.java' ! -name '*IntegrationTest.java' | wc -l | tr -d ' ')
+          integration_classes=$(find src/test/java -name '*IntegrationTest.java' | wc -l | tr -d ' ')
+          echo "- Unit/boundary test classes: ${unit_classes}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- API/integration test classes: ${integration_classes}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Count convention: test classes by repository naming convention; parameterized invocations are not inflated as independent scenarios." >> "$GITHUB_STEP_SUMMARY"
+          if [ -f target/site/jacoco/jacoco.csv ]; then
+            python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import csv
+          from pathlib import Path
+          rows = list(csv.DictReader(Path('target/site/jacoco/jacoco.csv').open()))
+          for kind in ('LINE', 'BRANCH'):
+              missed = sum(int(row[f'{kind}_MISSED']) for row in rows)
+              covered = sum(int(row[f'{kind}_COVERED']) for row in rows)
+              total = missed + covered
+              pct = 100.0 * covered / total if total else 100.0
+              print(f'- Raw JaCoCo {kind.lower()} coverage: {pct:.2f}% ({covered}/{total})')
+          PY
+          fi
           echo "- Behavioral traceability: [docs/quality/behavioral-test-matrix.md](https://github.com/${GITHUB_REPOSITORY}/blob/${GITHUB_SHA}/docs/quality/behavioral-test-matrix.md)" >> "$GITHUB_STEP_SUMMARY"
 
   postgres-persistence:
@@ -84,6 +102,16 @@ jobs:
         run: |
           echo "## Frontend component + coverage" >> "$GITHUB_STEP_SUMMARY"
           echo "- Required gate: \`npm run test:coverage\` (component tests + repository coverage thresholds)" >> "$GITHUB_STEP_SUMMARY"
+          component_modules=$(find src -name '*.test.ts' -o -name '*.test.tsx' | wc -l | tr -d ' ')
+          echo "- Component test modules: ${component_modules}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Count convention: test modules, not individual/parameterized invocations, so parameterization cannot inflate the signal." >> "$GITHUB_STEP_SUMMARY"
+          if [ -f coverage/coverage-summary.json ]; then
+            node - <<'NODE' >> "$GITHUB_STEP_SUMMARY"
+          const summary = require('./coverage/coverage-summary.json').total;
+          console.log(`- Raw frontend line coverage: ${summary.lines.pct}% (${summary.lines.covered}/${summary.lines.total})`);
+          console.log(`- Raw frontend branch coverage: ${summary.branches.pct}% (${summary.branches.covered}/${summary.branches.total})`);
+          NODE
+          fi
           echo "- Behavioral traceability: [docs/quality/behavioral-test-matrix.md](https://github.com/${GITHUB_REPOSITORY}/blob/${GITHUB_SHA}/docs/quality/behavioral-test-matrix.md)" >> "$GITHUB_STEP_SUMMARY"
       - name: Build frontend
         run: npm run build
