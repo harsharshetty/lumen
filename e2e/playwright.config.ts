@@ -24,7 +24,7 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: 'mvn --batch-mode test-compile dependency:build-classpath -DincludeScope=test -Dmdep.outputFile=target/e2e-classpath.txt && java -Dspring.profiles.active=e2e -Dspring.datasource.url="$DATABASE_URL" -Dspring.datasource.username="$DATABASE_USERNAME" -Dspring.datasource.password="$DATABASE_PASSWORD" -Dspring.datasource.driver-class-name=org.postgresql.Driver -cp "target/test-classes:target/classes:$(cat target/e2e-classpath.txt)" com.lumen.e2e.E2eLumenApplication > ../e2e/backend-e2e.log 2>&1',
+      command: 'mvn --batch-mode test-compile dependency:build-classpath -DincludeScope=test -Dmdep.outputFile=target/e2e-classpath.txt && mkdir -p ../e2e/test-results && java -Dspring.profiles.active=e2e -Dspring.datasource.url="$DATABASE_URL" -Dspring.datasource.username="$DATABASE_USERNAME" -Dspring.datasource.password="$DATABASE_PASSWORD" -Dspring.datasource.driver-class-name=org.postgresql.Driver -cp "target/test-classes:target/classes:$(cat target/e2e-classpath.txt)" com.lumen.e2e.E2eLumenApplication > ../e2e/test-results/backend.log 2>&1',
       cwd: '../backend',
       url: 'http://127.0.0.1:8080/actuator/health',
       timeout: 120_000,
