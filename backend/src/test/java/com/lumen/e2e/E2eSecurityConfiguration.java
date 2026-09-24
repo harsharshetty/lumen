@@ -35,6 +35,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
@@ -99,14 +100,19 @@ public class E2eSecurityConfiguration {
                 if (displayName == null || displayName.isBlank()) {
                     displayName = subject;
                 }
+                String providerHeader = request.getHeader("X-E2E-Provider");
+                IdentityProvider provider = providerHeader == null || providerHeader.isBlank()
+                        ? IdentityProvider.GOOGLE
+                        : IdentityProvider.valueOf(providerHeader.toUpperCase(Locale.ROOT));
+                String registrationId = provider.name().toLowerCase(Locale.ROOT);
 
                 synchronized (authenticatedUserService) {
-                    authenticatedUserService.resolveOrProvision(IdentityProvider.GOOGLE, subject, displayName);
+                    authenticatedUserService.resolveOrProvision(provider, subject, displayName);
                 }
 
                 Instant issuedAt = Instant.now();
                 OidcIdToken idToken = new OidcIdToken(
-                        "e2e-" + subject,
+                        "e2e-" + registrationId + "-" + subject,
                         issuedAt,
                         issuedAt.plusSeconds(3600),
                         Map.of("sub", subject, "name", displayName));
@@ -116,7 +122,7 @@ public class E2eSecurityConfiguration {
                 OAuth2AuthenticationToken authentication = new OAuth2AuthenticationToken(
                         principal,
                         principal.getAuthorities(),
-                        "google");
+                        registrationId);
                 SecurityContext context = SecurityContextHolder.createEmptyContext();
                 context.setAuthentication(authentication);
                 SecurityContextHolder.setContext(context);
