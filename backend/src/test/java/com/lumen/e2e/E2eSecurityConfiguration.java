@@ -105,6 +105,10 @@ public class E2eSecurityConfiguration {
                         ? IdentityProvider.GOOGLE
                         : IdentityProvider.valueOf(providerHeader.toUpperCase(Locale.ROOT));
                 String registrationId = provider.name().toLowerCase(Locale.ROOT);
+                String email = request.getHeader("X-E2E-Email");
+                if (email == null || email.isBlank()) {
+                    email = subject + "@e2e.invalid";
+                }
 
                 synchronized (authenticatedUserService) {
                     authenticatedUserService.resolveOrProvision(provider, subject, displayName);
@@ -115,7 +119,7 @@ public class E2eSecurityConfiguration {
                         "e2e-" + registrationId + "-" + subject,
                         issuedAt,
                         issuedAt.plusSeconds(3600),
-                        Map.of("sub", subject, "name", displayName));
+                        Map.of("sub", subject, "name", displayName, "email", email));
                 OidcUser principal = new DefaultOidcUser(
                         List.of(new SimpleGrantedAuthority("ROLE_USER")),
                         idToken);
