@@ -29,12 +29,14 @@ class CurriculumCatalogControllerIntegrationTest {
     @Autowired private LearnerCurriculumRepository learnerCurriculumRepository;
     @Autowired private LearningConceptRepository learningConceptRepository;
     @Autowired private SubjectRepository subjectRepository;
+    @Autowired private UserLearnerAccessRepository userLearnerAccessRepository;
     @Autowired private LoginIdentityRepository loginIdentityRepository;
     @Autowired private UserRepository userRepository;
 
     @BeforeEach void cleanDatabase() {
         learnerCurriculumRepository.deleteAll(); curriculumConceptRepository.deleteAll(); curriculumRepository.deleteAll();
-        learningConceptRepository.deleteAll(); subjectRepository.deleteAll(); loginIdentityRepository.deleteAll(); userRepository.deleteAll();
+        learningConceptRepository.deleteAll(); subjectRepository.deleteAll(); userLearnerAccessRepository.deleteAll();
+        loginIdentityRepository.deleteAll(); userRepository.deleteAll();
     }
 
     @Test void authenticatedUserReadsOnlyActiveCatalogAndCannotMutateCanonicalCurricula() throws Exception {
